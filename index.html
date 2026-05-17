@@ -5,51 +5,128 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Volvo OBD2">
+<meta name="apple-mobile-web-app-title" content="OBD2 Diagnostics">
 <meta name="theme-color" content="#080a0f">
-<title>Volvo Diagnostics</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
+<title>OBD2 Diagnostics</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
   --bg:#080a0f;--s1:#0d1117;--s2:#111827;--s3:#1a2235;
-  --brd:rgba(255,255,255,0.06);--brd2:rgba(255,255,255,0.10);--brd3:rgba(255,255,255,0.16);
+  --brd:rgba(255,255,255,0.06);--brd2:rgba(255,255,255,0.10);--brd3:rgba(255,255,255,0.18);
   --acc:#c8a96e;--acc2:#e8c98e;--acc3:#8a6f3e;
   --txt:#f0f4f8;--txt2:#8899aa;--txt3:#4a5568;
   --ok:#10b981;--warn:#f59e0b;--err:#ef4444;
   --r:12px;--r2:9px;
-  --st:env(safe-area-inset-top);
-  --sb:env(safe-area-inset-bottom);
-  --sl:env(safe-area-inset-left);
-  --sr:env(safe-area-inset-right);
+  --st:env(safe-area-inset-top);--sb:env(safe-area-inset-bottom);
+  --sl:env(safe-area-inset-left);--sr:env(safe-area-inset-right);
 }
 html,body{height:100%;width:100%;overflow:hidden;background:var(--bg)}
-body{color:var(--txt);font-family:'Inter',sans-serif;line-height:1.5;display:flex;flex-direction:column}
-.app{display:flex;flex-direction:column;height:100%;width:100%;overflow:hidden}
+body{color:var(--txt);font-family:'Inter',sans-serif;line-height:1.5}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
 
+/* ===================== LOCATOR SCREEN ===================== */
+#locatorScreen{
+  position:fixed;top:0;left:0;right:0;bottom:0;
+  background:var(--bg);z-index:100;
+  display:flex;flex-direction:column;
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+}
+#locatorScreen::-webkit-scrollbar{display:none}
+.loc-hdr{
+  background:linear-gradient(135deg,#0d1117,#111827);
+  border-bottom:1px solid var(--brd);
+  padding:calc(var(--st) + 14px) calc(var(--sr)+20px) 14px calc(var(--sl)+20px);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+}
+.loc-hdr-left{display:flex;align-items:center;gap:12px}
+.loc-logo{width:36px;height:36px;border:1.5px solid var(--acc);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.loc-logo span{font-size:9px;font-weight:600;letter-spacing:1.5px;color:var(--acc)}
+.loc-hdr-title h1{font-size:clamp(11px,2.5vw,14px);font-weight:600;letter-spacing:2px;color:var(--txt)}
+.loc-hdr-title p{font-size:clamp(8px,1.8vw,10px);color:var(--txt2);letter-spacing:1px;font-weight:300;margin-top:2px}
+.loc-skip{background:transparent;border:1px solid var(--brd2);border-radius:20px;color:var(--txt3);padding:6px 14px;font-size:clamp(10px,1.8vw,11px);cursor:pointer;font-family:'Inter',sans-serif;letter-spacing:.5px;white-space:nowrap}
+.loc-skip:active{opacity:.7}
+
+.loc-body{flex:1;padding:20px calc(var(--sr)+16px) calc(var(--sb)+20px) calc(var(--sl)+16px)}
+
+.loc-hero{text-align:center;padding:16px 0 20px;animation:fadeIn .5s ease}
+.loc-hero-icon{width:64px;height:64px;border:1.5px solid var(--acc);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;background:rgba(200,169,110,.06)}
+.loc-hero-icon i{font-size:28px;color:var(--acc)}
+.loc-hero h2{font-size:clamp(20px,4.5vw,26px);font-weight:300;color:var(--txt);letter-spacing:-.5px;margin-bottom:8px}
+.loc-hero p{font-size:clamp(12px,2.2vw,14px);color:var(--txt2);line-height:1.6;max-width:320px;margin:0 auto}
+.acc-line{display:block;width:28px;height:1px;background:var(--acc);margin:14px auto}
+
+.sel-card{background:var(--s2);border:1px solid var(--brd);border-radius:var(--r);padding:18px;margin-bottom:14px;animation:slideUp .4s ease .1s both}
+.sel-card-title{font-size:clamp(8px,1.5vw,9px);letter-spacing:2px;color:var(--txt3);font-weight:500;margin-bottom:14px}
+.sel-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.sel-grid.three{grid-template-columns:1fr 1fr 1fr}
+@media(max-width:380px){.sel-grid.three{grid-template-columns:1fr 1fr}}
+.sel-group{display:flex;flex-direction:column;gap:6px}
+.sel-group label{font-size:clamp(9px,1.6vw,10px);color:var(--txt3);letter-spacing:1px;font-weight:500}
+.sel-group select{background:var(--s3);border:1px solid var(--brd2);border-radius:var(--r2);color:var(--txt);font-size:clamp(12px,2vw,14px);font-family:'Inter',sans-serif;padding:10px 12px;outline:none;-webkit-appearance:none;appearance:none;width:100%;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%234a5568' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+.sel-group select:focus{border-color:var(--acc3)}
+.sel-group select option{background:#1a2235;color:var(--txt)}
+.drive-row{display:flex;gap:8px;margin-top:2px}
+.drive-btn{flex:1;padding:10px 6px;background:var(--s3);border:1.5px solid var(--brd);border-radius:var(--r2);color:var(--txt3);font-size:clamp(11px,2vw,13px);font-family:'Inter',sans-serif;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .2s}
+.drive-btn.sel{border-color:var(--acc);color:var(--acc);background:rgba(200,169,110,.08)}
+.drive-btn i{font-size:16px}
+.find-btn{width:100%;padding:15px;background:linear-gradient(135deg,rgba(200,169,110,.15),rgba(200,169,110,.08));border:1px solid var(--acc3);border-radius:var(--r2);color:var(--acc);font-size:clamp(12px,2.2vw,14px);letter-spacing:2px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;transition:all .2s}
+.find-btn:active{background:rgba(200,169,110,.2)}
+
+/* RESULT */
+.result-card{background:var(--s2);border:1px solid var(--brd);border-radius:var(--r);overflow:hidden;margin-bottom:14px;display:none}
+.result-card.show{display:block;animation:slideUp .4s ease}
+.result-hdr{padding:14px 18px;border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.result-title{font-size:clamp(13px,2.5vw,16px);font-weight:500;color:var(--txt)}
+.result-sub{font-size:clamp(9px,1.6vw,10px);color:var(--txt3);letter-spacing:1px;margin-top:3px}
+.result-badge{font-size:9px;padding:3px 10px;border-radius:20px;background:rgba(200,169,110,.1);color:var(--acc);border:1px solid rgba(200,169,110,.2);font-weight:600;white-space:nowrap}
+.svg-wrap{padding:18px;background:var(--bg);display:flex;justify-content:center}
+.svg-wrap svg{width:100%;max-width:380px;height:auto}
+.loc-steps{padding:14px 18px}
+.loc-step{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--brd)}
+.loc-step:last-child{border-bottom:none}
+.step-num{width:24px;height:24px;border-radius:50%;background:rgba(200,169,110,.12);border:1px solid rgba(200,169,110,.25);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--acc);flex-shrink:0;margin-top:1px}
+.step-txt{font-size:clamp(12px,2vw,13px);color:var(--txt2);line-height:1.5}
+.step-txt strong{color:var(--txt);font-weight:500}
+.tip-box{margin:0 18px 16px;padding:12px 14px;background:rgba(16,185,129,.05);border:1px solid rgba(16,185,129,.15);border-radius:var(--r2);display:flex;gap:10px;align-items:flex-start}
+.tip-box i{color:var(--ok);font-size:16px;flex-shrink:0;margin-top:1px}
+.tip-box span{font-size:clamp(11px,1.8vw,12px);color:var(--txt2);line-height:1.5}
+
+/* BIG CTA */
+.found-btn{width:100%;padding:17px;background:var(--ok);border:none;border-radius:var(--r2);color:#fff;font-size:clamp(13px,2.5vw,15px);letter-spacing:1.5px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:600;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px;transition:all .2s;box-shadow:0 0 20px rgba(16,185,129,.25)}
+.found-btn:active{background:#0ea572;transform:scale(.99)}
+.found-btn i{font-size:20px}
+
+/* ===================== MAIN APP ===================== */
+#mainApp{
+  position:fixed;top:0;left:0;right:0;bottom:0;
+  display:none;flex-direction:column;background:var(--bg);
+  opacity:0;transition:opacity .4s ease;
+}
+#mainApp.visible{display:flex;opacity:1}
 .hdr{background:var(--s1);border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:8px;
-  padding-top:calc(var(--st) + 10px);padding-bottom:10px;
-  padding-left:calc(var(--sl) + 14px);padding-right:calc(var(--sr) + 14px);
-  min-height:calc(var(--st) + 52px)}
+  padding-top:calc(var(--st)+10px);padding-bottom:10px;
+  padding-left:calc(var(--sl)+14px);padding-right:calc(var(--sr)+14px);
+  min-height:calc(var(--st)+52px)}
 .hdr-left{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
-.volvo-mark{width:34px;height:34px;border:1.5px solid var(--acc);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.volvo-mark span{font-size:9px;font-weight:600;letter-spacing:1.5px;color:var(--acc)}
-.hdr-title{min-width:0;flex:1}
+.logo{width:34px;height:34px;border:1.5px solid var(--acc);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo span{font-size:9px;font-weight:600;letter-spacing:1.5px;color:var(--acc)}
 .hdr-title h1{font-size:clamp(10px,2.2vw,13px);font-weight:600;letter-spacing:2px;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.hdr-title p{font-size:clamp(8px,1.6vw,10px);color:var(--txt2);letter-spacing:1px;font-weight:300;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hdr-title p{font-size:clamp(8px,1.6vw,10px);color:var(--txt2);letter-spacing:1px;font-weight:300;margin-top:1px}
 .hdr-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
 .conn-pill{display:flex;align-items:center;gap:6px;padding:5px 10px;border:1px solid var(--brd2);border-radius:20px;background:var(--s2)}
-.conn-dot{width:6px;height:6px;border-radius:50%;background:var(--warn);flex-shrink:0;animation:pulse 2s infinite}
+.conn-dot{width:6px;height:6px;border-radius:50%;background:var(--warn);animation:pulse 2s infinite;flex-shrink:0}
 .conn-dot.live{background:var(--ok)}
 .conn-txt{font-size:clamp(8px,1.6vw,10px);color:var(--txt2);white-space:nowrap}
-.vin-txt{font-size:clamp(8px,1.5vw,10px);color:var(--txt3);white-space:nowrap}
-.vin-txt span{color:var(--acc);font-weight:500}
-@media(max-width:430px){.vin-txt{display:none}}
+.loc-again-btn{background:transparent;border:1px solid var(--brd2);border-radius:20px;color:var(--txt3);padding:5px 10px;font-size:10px;cursor:pointer;font-family:'Inter',sans-serif;display:flex;align-items:center;gap:5px;white-space:nowrap}
+.loc-again-btn:active{opacity:.7}
+.loc-again-btn i{font-size:13px}
 
-.nav{display:flex;background:var(--s1);border-bottom:1px solid var(--brd);flex-shrink:0;overflow-x:auto;
-  padding-left:var(--sl);padding-right:var(--sr)}
+.nav{display:flex;background:var(--s1);border-bottom:1px solid var(--brd);flex-shrink:0;overflow-x:auto;padding-left:var(--sl);padding-right:var(--sr)}
 .nav::-webkit-scrollbar{display:none}
 .ntab{flex:1;min-width:60px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 4px 8px;border:none;background:none;color:var(--txt3);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;font-family:'Inter',sans-serif;font-size:clamp(7px,1.5vw,9px);letter-spacing:1px;font-weight:500;white-space:nowrap}
 .ntab i{font-size:clamp(16px,3vw,20px);transition:color .2s}
@@ -58,28 +135,24 @@ body{color:var(--txt);font-family:'Inter',sans-serif;line-height:1.5;display:fle
 .ntab:active{opacity:.6}
 
 .panels{flex:1;overflow:hidden;position:relative}
-.panel{display:none;height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;
-  padding:12px calc(var(--sr) + 14px) calc(var(--sb) + 14px) calc(var(--sl) + 14px)}
+.panel{display:none;height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px calc(var(--sr)+14px) calc(var(--sb)+20px) calc(var(--sl)+14px)}
 .panel.on{display:block}
 .panel::-webkit-scrollbar{display:none}
 .sec-lbl{font-size:clamp(8px,1.5vw,9px);letter-spacing:2px;color:var(--txt3);font-weight:500;margin-bottom:9px}
 
+/* GAUGES */
 .gg{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:12px}
 .gauge{background:var(--s2);border:1px solid var(--brd);border-radius:var(--r);padding:11px;transition:border-color .3s}
-.gauge.w{border-color:rgba(245,158,11,.2)}
-.gauge.d{border-color:rgba(239,68,68,.2)}
+.gauge.w{border-color:rgba(245,158,11,.2)}.gauge.d{border-color:rgba(239,68,68,.2)}
 .gauge-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px}
 .gauge-lbl{font-size:clamp(8px,1.5vw,9px);letter-spacing:1px;color:var(--txt3);font-weight:500}
 .gauge-dot{width:5px;height:5px;border-radius:50%;background:var(--ok);flex-shrink:0;margin-top:2px;transition:background .3s}
-.gauge.w .gauge-dot{background:var(--warn)}
-.gauge.d .gauge-dot{background:var(--err)}
+.gauge.w .gauge-dot{background:var(--warn)}.gauge.d .gauge-dot{background:var(--err)}
 .gauge-val{font-size:clamp(20px,4.5vw,28px);font-weight:300;color:var(--txt);letter-spacing:-1px;line-height:1;margin-bottom:2px}
 .gauge-unit{font-size:clamp(9px,1.5vw,10px);color:var(--txt3)}
 .gauge-bar{height:2px;background:var(--brd2);border-radius:1px;margin-top:8px}
 .gauge-fill{height:100%;border-radius:1px;background:var(--acc);transition:width 1.2s cubic-bezier(.4,0,.2,1)}
-.gauge.w .gauge-fill{background:var(--warn)}
-.gauge.d .gauge-fill{background:var(--err)}
-
+.gauge.w .gauge-fill{background:var(--warn)}.gauge.d .gauge-fill{background:var(--err)}
 .card{background:var(--s2);border:1px solid var(--brd);border-radius:var(--r);padding:13px;margin-bottom:11px}
 .prow{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--brd);flex-wrap:wrap}
 .prow:last-child{border-bottom:none}
@@ -89,38 +162,44 @@ body{color:var(--txt);font-family:'Inter',sans-serif;line-height:1.5;display:fle
 .pfill{height:100%;background:var(--acc);border-radius:1px;transition:width 1.5s cubic-bezier(.4,0,.2,1)}
 .pval{font-size:clamp(11px,2vw,13px);color:var(--txt);font-weight:500;min-width:65px;text-align:right;font-variant-numeric:tabular-nums}
 
+/* FAULT */
 .fault-card{background:var(--s2);border:1px solid rgba(239,68,68,.2);border-radius:var(--r);padding:13px;margin-bottom:11px}
 .fault-hdr{display:flex;align-items:center;gap:8px;margin-bottom:11px;flex-wrap:wrap}
 .fault-badge{font-size:9px;padding:3px 10px;border-radius:20px;background:rgba(239,68,68,.12);color:var(--err);border:1px solid rgba(239,68,68,.25);letter-spacing:1px;font-weight:600;white-space:nowrap}
 .frow{display:flex;align-items:center;gap:9px;padding:11px 0;border-bottom:1px solid var(--brd);cursor:pointer}
 .frow:last-of-type{border-bottom:none}
 .frow:active{opacity:.7}
-.fcode{font-size:clamp(12px,2.2vw,14px);color:var(--warn);font-weight:600;font-family:monospace;min-width:58px;flex-shrink:0;letter-spacing:.5px}
-.fvolvo{font-size:9px;color:var(--txt3);letter-spacing:.5px;margin-top:2px;font-family:monospace}
+.fcode{font-size:clamp(12px,2.2vw,14px);color:var(--warn);font-weight:600;font-family:monospace;min-width:58px;flex-shrink:0}
+.fvolvo{font-size:9px;color:var(--txt3);font-family:monospace;margin-top:2px}
 .fdesc{font-size:clamp(11px,2vw,13px);color:var(--txt);flex:1;line-height:1.4;min-width:0}
 .fsys{font-size:clamp(9px,1.6vw,11px);color:var(--txt2);margin-top:2px}
 .clr-btn{width:100%;margin-top:11px;padding:11px;background:transparent;border:1px solid rgba(239,68,68,.25);border-radius:var(--r2);color:var(--err);font-size:clamp(10px,1.8vw,11px);letter-spacing:1.5px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:500}
-.clr-btn:active{background:rgba(239,68,68,.08)}
 
-.search-wrap{position:relative;margin-bottom:11px}
-.search-wrap i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--txt3);font-size:16px;pointer-events:none}
-.sinput{width:100%;padding:11px 12px 11px 38px;background:var(--s2);border:1px solid var(--brd);border-radius:var(--r2);color:var(--txt);font-size:clamp(13px,2.2vw,15px);font-family:'Inter',sans-serif;outline:none;-webkit-appearance:none}
-.sinput:focus{border-color:var(--acc3)}
-.sinput::placeholder{color:var(--txt3)}
-.filt-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:11px}
-.fb{padding:5px 11px;border:1px solid var(--brd);border-radius:20px;background:transparent;color:var(--txt3);font-size:clamp(9px,1.6vw,10px);letter-spacing:1px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:500;white-space:nowrap}
-.fb.on{border-color:var(--acc3);color:var(--acc);background:rgba(200,169,110,.08)}
-.fb:active{opacity:.7}
-.clist{display:flex;flex-direction:column;gap:6px}
-.ccard{background:var(--s2);border:1px solid var(--brd);border-radius:var(--r2);padding:12px 13px;cursor:pointer;display:flex;align-items:center;gap:9px}
-.ccard:active{opacity:.7}
-.cbadge{font-size:clamp(11px,2vw,13px);font-weight:600;font-family:monospace;letter-spacing:.5px;flex-shrink:0}
-.cbadge.generic{color:var(--ok)}
-.cbadge.volvo{color:var(--warn)}
-.ctag{font-size:8px;padding:2px 7px;border-radius:8px;letter-spacing:1px;font-weight:600;white-space:nowrap}
-.ctag.g{background:rgba(16,185,129,.1);color:var(--ok);border:1px solid rgba(16,185,129,.2)}
-.ctag.v{background:rgba(245,158,11,.1);color:var(--warn);border:1px solid rgba(245,158,11,.2)}
+/* SCAN */
+.scan-card{background:var(--s2);border:1px solid var(--brd);border-radius:var(--r);padding:18px;margin-bottom:14px;text-align:center}
+.scan-icon-wrap{width:72px;height:72px;border-radius:50%;border:2px solid var(--brd2);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;transition:all .5s}
+.scan-icon-wrap.idle{border-color:var(--brd2)}
+.scan-icon-wrap.scanning{border-color:var(--acc);animation:scanpulse 1s infinite;box-shadow:0 0 0 0 rgba(200,169,110,.4)}
+.scan-icon-wrap.done-ok{border-color:var(--ok);box-shadow:0 0 0 6px rgba(16,185,129,.08)}
+.scan-icon-wrap.done-err{border-color:var(--err);box-shadow:0 0 0 6px rgba(239,68,68,.08)}
+@keyframes scanpulse{0%{box-shadow:0 0 0 0 rgba(200,169,110,.4)}70%{box-shadow:0 0 0 12px rgba(200,169,110,0)}100%{box-shadow:0 0 0 0 rgba(200,169,110,0)}}
+.scan-icon-wrap i{font-size:28px;transition:color .4s}
+.scan-title{font-size:clamp(14px,2.5vw,16px);font-weight:500;color:var(--txt);margin-bottom:6px}
+.scan-sub{font-size:clamp(11px,1.8vw,12px);color:var(--txt2);line-height:1.6;margin-bottom:16px}
+.scan-progress{height:2px;background:var(--brd2);border-radius:1px;overflow:hidden;margin:0 20px 14px;display:none}
+.scan-progress.show{display:block}
+.scan-progress-fill{height:100%;background:var(--acc);border-radius:1px;transition:width .4s ease;width:0%}
+.scan-steps-txt{font-size:clamp(10px,1.8vw,11px);color:var(--acc);letter-spacing:1px;margin-bottom:14px;min-height:18px}
+.scan-btn{display:inline-flex;align-items:center;gap:8px;padding:13px 28px;background:linear-gradient(135deg,rgba(200,169,110,.15),rgba(200,169,110,.08));border:1px solid var(--acc3);border-radius:var(--r2);color:var(--acc);font-size:clamp(11px,2vw,13px);letter-spacing:2px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:600;transition:all .2s}
+.scan-btn:active:not(:disabled){background:rgba(200,169,110,.2)}
+.scan-btn:disabled{opacity:.4;cursor:not-allowed}
+.scan-btn i{font-size:18px}
+.scan-result-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:.5px;margin-bottom:14px}
+.scan-result-badge.found{background:rgba(239,68,68,.1);color:var(--err);border:1px solid rgba(239,68,68,.2)}
+.scan-result-badge.clean{background:rgba(16,185,129,.1);color:var(--ok);border:1px solid rgba(16,185,129,.2)}
+.new-faults-list{text-align:left;margin-top:4px}
 
+/* SERVICE */
 .lamp-row{display:flex;align-items:center;gap:14px;background:var(--s2);border:1px solid var(--brd);border-radius:var(--r);padding:14px;margin-bottom:12px}
 .lamp{width:clamp(56px,8vw,68px);height:clamp(56px,8vw,68px);border-radius:50%;border:2px solid var(--brd2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;transition:all .5s;flex-shrink:0}
 .lamp.on{border-color:var(--warn);box-shadow:0 0 0 6px rgba(245,158,11,.07)}
@@ -130,12 +209,10 @@ body{color:var(--txt);font-family:'Inter',sans-serif;line-height:1.5;display:fle
 .lamp-lbl{font-size:8px;letter-spacing:1.5px;font-weight:600}
 .lamp-info h3{font-size:clamp(13px,2.2vw,15px);font-weight:500;color:var(--txt);margin-bottom:4px}
 .lamp-info p{font-size:clamp(11px,1.8vw,12px);color:var(--txt2);line-height:1.6}
-
 .iv-label{font-size:clamp(8px,1.5vw,9px);letter-spacing:2px;color:var(--txt3);font-weight:500;margin-bottom:9px}
 .iv-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:12px}
 @media(max-width:380px){.iv-grid{grid-template-columns:repeat(2,1fr)}}
 .ivc{background:var(--s2);border:2px solid var(--brd);border-radius:var(--r);padding:13px 7px;text-align:center;cursor:pointer;transition:all .2s}
-.ivc:active{opacity:.8}
 .ivc.sel{border-color:var(--acc);background:rgba(200,169,110,.05)}
 .ivc-km{font-size:clamp(18px,3.5vw,24px);font-weight:300;color:var(--txt);letter-spacing:-1px;line-height:1;margin-bottom:2px;transition:color .2s}
 .ivc.sel .ivc-km{color:var(--acc)}
@@ -146,28 +223,21 @@ body{color:var(--txt);font-family:'Inter',sans-serif;line-height:1.5;display:fle
 .ivc-tag.ll{background:rgba(200,169,110,.1);color:var(--acc);border:1px solid rgba(200,169,110,.2)}
 .ivc-desc{font-size:clamp(9px,1.5vw,10px);color:var(--txt3);margin-top:6px;line-height:1.4;display:none}
 .ivc.sel .ivc-desc{display:block;color:var(--txt2)}
-
 .confirm-box{background:var(--s2);border:1px solid rgba(245,158,11,.2);border-radius:var(--r);padding:14px;margin-bottom:11px;display:none}
 .confirm-box.show{display:block}
 .cb-title{font-size:clamp(9px,1.6vw,10px);color:var(--warn);letter-spacing:1.5px;font-weight:600;margin-bottom:7px;display:flex;align-items:center;gap:6px}
 .cb-text{font-size:clamp(11px,1.8vw,12px);color:var(--txt2);line-height:1.7;margin-bottom:11px}
 .cb-row{display:flex;gap:8px}
 .cb-yes{flex:1;padding:11px;background:rgba(200,169,110,.1);border:1px solid var(--acc3);border-radius:var(--r2);color:var(--acc);font-size:clamp(10px,1.8vw,11px);letter-spacing:1px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:600}
-.cb-yes:active{background:rgba(200,169,110,.2)}
 .cb-no{flex:1;padding:11px;background:transparent;border:1px solid var(--brd);border-radius:var(--r2);color:var(--txt3);font-size:clamp(10px,1.8vw,11px);letter-spacing:1px;cursor:pointer;font-family:'Inter',sans-serif}
-
 .step-card{background:var(--s2);border:1px solid var(--brd);border-radius:var(--r);padding:14px;margin-bottom:11px;display:none}
 .step-row{display:flex;align-items:center;gap:4px;margin-bottom:9px}
 .sdot{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;flex-shrink:0;transition:all .4s}
-.sdot.done{background:var(--ok);color:#fff}
-.sdot.act{background:var(--acc);color:#000;animation:pulse .8s infinite}
-.sdot.pend{background:var(--s3);color:var(--txt3)}
-.sline{flex:1;height:1px;background:var(--brd)}
-.sline.done{background:var(--ok)}
+.sdot.done{background:var(--ok);color:#fff}.sdot.act{background:var(--acc);color:#000;animation:pulse .8s infinite}.sdot.pend{background:var(--s3);color:var(--txt3)}
+.sline{flex:1;height:1px;background:var(--brd)}.sline.done{background:var(--ok)}
 .step-msg{font-size:clamp(10px,1.8vw,11px);color:var(--acc);letter-spacing:1px;text-align:center;margin-bottom:8px;font-weight:500}
 .prog{height:2px;background:var(--brd2);border-radius:1px;overflow:hidden}
 .prog-fill{height:100%;background:var(--acc);border-radius:1px;transition:width .35s}
-
 .svc-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px;flex-wrap:wrap;gap:6px}
 .svc-ttl{font-size:clamp(8px,1.5vw,9px);letter-spacing:2px;color:var(--txt3);font-weight:500}
 .badge{font-size:9px;padding:3px 10px;border-radius:20px;font-weight:600;letter-spacing:.5px;white-space:nowrap}
@@ -179,33 +249,28 @@ body{color:var(--txt);font-family:'Inter',sans-serif;line-height:1.5;display:fle
 .sbar{flex:1;min-width:40px;height:2px;background:var(--brd2);border-radius:1px;overflow:hidden}
 .sfill{height:100%;border-radius:1px;transition:width .8s}
 .sval{font-size:clamp(11px,1.8vw,12px);color:var(--txt);font-weight:500;min-width:65px;text-align:right;white-space:nowrap}
-
 .reset-btn{width:100%;padding:13px;background:transparent;border:1px solid var(--acc3);border-radius:var(--r2);color:var(--acc);font-size:clamp(10px,1.8vw,11px);letter-spacing:2px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:600;display:flex;align-items:center;justify-content:center;gap:7px;margin-bottom:11px}
 .reset-btn:active:not(:disabled){background:rgba(200,169,110,.08)}
 .reset-btn:disabled{opacity:.3;cursor:not-allowed;border-color:var(--brd);color:var(--txt3)}
-
 .log-card{background:var(--s2);border:1px solid var(--brd);border-radius:var(--r);padding:13px}
 .logrow{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--brd);flex-wrap:wrap}
 .logrow:last-child{border-bottom:none}
-.log-type{font-size:clamp(11px,1.8vw,12px);color:var(--txt2)}
 .log-iv{font-size:9px;padding:2px 8px;border-radius:8px;background:rgba(200,169,110,.1);color:var(--acc);border:1px solid rgba(200,169,110,.2);font-weight:600;white-space:nowrap}
-.log-ts{font-size:10px;color:var(--txt3);font-family:monospace}
 
-.dpage{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:200;flex-direction:column}
+/* DETAIL */
+.dpage{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:300;flex-direction:column}
 .dpage.open{display:flex}
 .dhdr{background:var(--s1);border-bottom:1px solid var(--brd);display:flex;align-items:center;gap:10px;flex-shrink:0;flex-wrap:wrap;
-  padding-top:calc(var(--st) + 12px);padding-bottom:12px;
-  padding-left:calc(var(--sl) + 14px);padding-right:calc(var(--sr) + 14px)}
+  padding-top:calc(var(--st)+12px);padding-bottom:12px;
+  padding-left:calc(var(--sl)+14px);padding-right:calc(var(--sr)+14px)}
 .bbtn{background:transparent;border:1px solid var(--brd);border-radius:var(--r2);color:var(--txt2);padding:7px 13px;font-size:clamp(10px,1.8vw,11px);cursor:pointer;display:flex;align-items:center;gap:5px;flex-shrink:0;font-family:'Inter',sans-serif}
-.bbtn:active{border-color:var(--brd3)}
-.dhdr-code{font-size:clamp(13px,2.5vw,16px);font-weight:600;color:var(--warn);font-family:monospace;letter-spacing:.5px}
+.dhdr-code{font-size:clamp(13px,2.5vw,16px);font-weight:600;color:var(--warn);font-family:monospace}
 .dhdr-sys{font-size:clamp(9px,1.5vw,10px);color:var(--txt3);letter-spacing:1px;margin-top:2px}
 .dsev{display:inline-flex;align-items:center;padding:4px 10px;border-radius:20px;font-size:10px;font-weight:600;letter-spacing:1px;white-space:nowrap}
 .dsev.h{background:rgba(239,68,68,.1);color:var(--err);border:1px solid rgba(239,68,68,.2)}
 .dsev.m{background:rgba(245,158,11,.1);color:var(--warn);border:1px solid rgba(245,158,11,.2)}
 .dsev.l{background:rgba(16,185,129,.1);color:var(--ok);border:1px solid rgba(16,185,129,.2)}
-.dbody{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
-  padding:14px calc(var(--sr) + 14px) calc(var(--sb) + 16px) calc(var(--sl) + 14px)}
+.dbody{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px calc(var(--sr)+14px) calc(var(--sb)+16px) calc(var(--sl)+14px)}
 .dbody::-webkit-scrollbar{display:none}
 .dsec{background:var(--s2);border:1px solid var(--brd);border-radius:var(--r);padding:13px;margin-bottom:10px}
 .dsec-ttl{font-size:clamp(8px,1.5vw,9px);letter-spacing:2px;color:var(--txt3);font-weight:600;margin-bottom:10px}
@@ -216,29 +281,95 @@ body{color:var(--txt);font-family:'Inter',sans-serif;line-height:1.5;display:fle
 .dmv{font-size:clamp(11px,2vw,13px);color:var(--txt);font-weight:500}
 .dlist{list-style:none;display:flex;flex-direction:column;gap:6px}
 .ditem{display:flex;gap:9px;padding:10px 12px;background:var(--s1);border-radius:0 var(--r2) var(--r2) 0;border:1px solid var(--brd)}
-.ditem.c{border-left:2px solid var(--warn)}
-.ditem.r{border-left:2px solid var(--ok)}
+.ditem.c{border-left:2px solid var(--warn)}.ditem.r{border-left:2px solid var(--ok)}
 .dnum{font-size:11px;font-weight:600;min-width:16px;margin-top:1px;flex-shrink:0}
-.ditem.c .dnum{color:var(--warn)}
-.ditem.r .dnum{color:var(--ok)}
+.ditem.c .dnum{color:var(--warn)}.ditem.r .dnum{color:var(--ok)}
 .dtxt{font-size:clamp(12px,2vw,13px);color:var(--txt2);line-height:1.5}
-
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
 </style>
 </head>
 <body>
-<div class="app">
+
+<!-- ===== LOCATOR SCREEN ===== -->
+<div id="locatorScreen">
+  <div class="loc-hdr">
+    <div class="loc-hdr-left">
+      <div class="loc-logo"><span>OBD</span></div>
+      <div class="loc-hdr-title">
+        <h1>OBD2 DIAGNOSTICS</h1>
+        <p>MULTI-BRAND · DII PROTOCOL</p>
+      </div>
+    </div>
+    <button class="loc-skip" onclick="enterApp()">Skip <i class="ti ti-arrow-right" aria-hidden="true"></i></button>
+  </div>
+
+  <div class="loc-body">
+    <div class="loc-hero">
+      <div class="loc-hero-icon"><i class="ti ti-plug-connected" aria-hidden="true"></i></div>
+      <h2>My OBD-II Location</h2>
+      <p>Before connecting, find the exact location of the OBD-II port in your vehicle</p>
+      <span class="acc-line"></span>
+    </div>
+
+    <div class="sel-card">
+      <div class="sel-card-title">Select your vehicle</div>
+      <div class="sel-grid" style="margin-bottom:12px">
+        <div class="sel-group">
+          <label>Make</label>
+          <select id="selMake" onchange="onMakeChange()"><option value="">Select make…</option></select>
+        </div>
+        <div class="sel-group">
+          <label>Model</label>
+          <select id="selModel" onchange="onModelChange()" disabled><option value="">Select model…</option></select>
+        </div>
+      </div>
+      <div class="sel-grid three" style="margin-bottom:4px">
+        <div class="sel-group">
+          <label>Year</label>
+          <select id="selYear" disabled><option value="">Year…</option></select>
+        </div>
+        <div class="sel-group" style="grid-column:span 2">
+          <label>Steering side</label>
+          <div class="drive-row">
+            <button class="drive-btn sel" id="btnLHD" onclick="setDrive('LHD')"><i class="ti ti-steering-wheel" aria-hidden="true"></i> Left (LHD)</button>
+            <button class="drive-btn" id="btnRHD" onclick="setDrive('RHD')"><i class="ti ti-steering-wheel" aria-hidden="true"></i> Right (RHD)</button>
+          </div>
+        </div>
+      </div>
+      <button class="find-btn" onclick="findPort()"><i class="ti ti-search" aria-hidden="true"></i> Find OBD-II Port</button>
+    </div>
+
+    <div class="result-card" id="resultCard">
+      <div class="result-hdr">
+        <div>
+          <div class="result-title" id="resultTitle">—</div>
+          <div class="result-sub" id="resultSub">—</div>
+        </div>
+        <span class="result-badge" id="resultBadge">—</span>
+      </div>
+      <div class="svg-wrap" id="svgWrap"></div>
+      <div class="loc-steps" id="locSteps"></div>
+      <div class="tip-box"><i class="ti ti-bulb" aria-hidden="true"></i><span id="tipTxt">—</span></div>
+      <div style="padding:0 18px 18px">
+        <button class="found-btn" onclick="enterApp()">
+          <i class="ti ti-check" aria-hidden="true"></i> OK, I found it — Let's go!
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MAIN APP ===== -->
+<div id="mainApp">
   <div class="hdr">
     <div class="hdr-left">
-      <div class="volvo-mark"><span>OBD</span></div>
+      <div class="logo"><span>OBD</span></div>
       <div class="hdr-title">
-        <h1>VOLVO DIAGNOSTICS</h1>
-        <p>ELM327 · DII PROTOCOL</p>
+        <h1>OBD2 DIAGNOSTICS</h1>
+        <p>MULTI-BRAND · DII PROTOCOL</p>
       </div>
     </div>
     <div class="hdr-right">
-      <div class="vin-txt">VIN <span>YV1CZ58H2X1234567</span></div>
+      <button class="loc-again-btn" onclick="goBackToLocator()"><i class="ti ti-map-pin" aria-hidden="true"></i> OBD Port</button>
       <div class="conn-pill">
         <div class="conn-dot" id="cDot"></div>
         <span class="conn-txt" id="cTxt">CONNECTING</span>
@@ -249,7 +380,6 @@ body{color:var(--txt);font-family:'Inter',sans-serif;line-height:1.5;display:fle
   <div class="nav">
     <button class="ntab on" onclick="showTab('live',this)"><i class="ti ti-activity" aria-hidden="true"></i>LIVE</button>
     <button class="ntab" onclick="showTab('dtc',this)"><i class="ti ti-alert-circle" aria-hidden="true"></i>FAULTS</button>
-    <button class="ntab" onclick="showTab('search',this)"><i class="ti ti-search" aria-hidden="true"></i>SEARCH</button>
     <button class="ntab" onclick="showTab('svc',this)"><i class="ti ti-settings" aria-hidden="true"></i>SERVICE</button>
   </div>
 
@@ -260,30 +390,37 @@ body{color:var(--txt);font-family:'Inter',sans-serif;line-height:1.5;display:fle
       <div class="sec-lbl">Real-time PID data</div>
       <div class="card" id="pidList"></div>
     </div>
-
     <div id="tab-dtc" class="panel">
+
+      <!-- SCAN CARD -->
+      <div class="scan-card">
+        <div class="scan-icon-wrap idle" id="scanIconWrap">
+          <i class="ti ti-radar" id="scanIcon" aria-hidden="true" style="color:var(--txt3)"></i>
+        </div>
+        <div class="scan-title" id="scanTitle">Scan for fault codes</div>
+        <div class="scan-sub" id="scanSub">Connect your ELM327 adapter and press Scan to read live fault codes from the vehicle ECU.</div>
+        <div class="scan-progress" id="scanProgress"><div class="scan-progress-fill" id="scanProgressFill"></div></div>
+        <div class="scan-steps-txt" id="scanStepTxt"></div>
+        <div id="scanResultBadge"></div>
+        <div class="new-faults-list" id="newFaultsList"></div>
+        <button class="scan-btn" id="scanBtn" onclick="startScan()">
+          <i class="ti ti-radar" aria-hidden="true"></i> SCAN NOW
+        </button>
+      </div>
+
+      <!-- STORED FAULTS -->
+      <div class="sec-lbl">Stored fault codes</div>
       <div class="fault-card" id="activeSec">
         <div class="fault-hdr">
           <span class="fault-badge">ACTIVE</span>
-          <span style="font-size:clamp(11px,2vw,13px);color:var(--txt2)">2 fault codes detected</span>
+          <span style="font-size:clamp(11px,2vw,13px);color:var(--txt2)" id="activeCount">2 codes stored</span>
         </div>
         <div id="activeDTC"></div>
-        <button class="clr-btn" onclick="document.getElementById('activeSec').style.display='none'">Clear all codes</button>
+        <button class="clr-btn" onclick="clearAllCodes()">Clear all stored codes</button>
       </div>
       <div class="sec-lbl" style="margin-top:4px">History — cleared codes</div>
       <div style="background:var(--s2);border:1px solid var(--brd);border-radius:var(--r);padding:0 13px" id="histDTC"></div>
     </div>
-
-    <div id="tab-search" class="panel">
-      <div class="search-wrap">
-        <i class="ti ti-search" aria-hidden="true"></i>
-        <input class="sinput" id="srch" type="search" placeholder="Search code or description…" oninput="filterCodes()">
-      </div>
-      <div class="filt-row" id="frow"></div>
-      <div style="font-size:clamp(10px,1.8vw,11px);color:var(--txt3);margin-bottom:9px" id="ccount"></div>
-      <div class="clist" id="clist"></div>
-    </div>
-
     <div id="tab-svc" class="panel">
       <div class="lamp-row">
         <div class="lamp on" id="lamp">
@@ -292,13 +429,11 @@ body{color:var(--txt);font-family:'Inter',sans-serif;line-height:1.5;display:fle
         </div>
         <div class="lamp-info">
           <h3 id="lampTitle">Service reminder active</h3>
-          <p id="lampSub">Select an interval below, then confirm to clear the lamp.</p>
+          <p id="lampSub">Select an interval below, then confirm to clear.</p>
         </div>
       </div>
-
       <div class="iv-label">Select next service interval</div>
       <div class="iv-grid" id="ivGrid"></div>
-
       <div class="confirm-box" id="cbox">
         <div class="cb-title"><i class="ti ti-alert-triangle" aria-hidden="true"></i> Confirm reset</div>
         <div class="cb-text" id="cbTxt"></div>
@@ -307,25 +442,18 @@ body{color:var(--txt);font-family:'Inter',sans-serif;line-height:1.5;display:fle
           <button class="cb-no" onclick="document.getElementById('cbox').classList.remove('show')">Cancel</button>
         </div>
       </div>
-
       <div class="step-card" id="stepCard">
         <div class="step-row" id="stepRow"></div>
         <div class="step-msg" id="stepMsg"></div>
         <div class="prog"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
       </div>
-
       <div class="card">
-        <div class="svc-hdr">
-          <span class="svc-ttl">Service status</span>
-          <span class="badge due" id="svcBadge">Overdue</span>
-        </div>
+        <div class="svc-hdr"><span class="svc-ttl">Service status</span><span class="badge due" id="svcBadge">Overdue</span></div>
         <div id="svcRows"></div>
       </div>
-
       <button class="reset-btn" id="rbtn" onclick="confirmReset()">
         <i class="ti ti-refresh" aria-hidden="true"></i> Reset service lamp
       </button>
-
       <div class="log-card">
         <div class="svc-hdr" style="margin-bottom:9px"><span class="svc-ttl">Reset log</span></div>
         <div id="rlog"><div style="font-size:clamp(11px,1.8vw,12px);color:var(--txt3);padding:4px 0">No resets recorded yet</div></div>
@@ -334,11 +462,10 @@ body{color:var(--txt);font-family:'Inter',sans-serif;line-height:1.5;display:fle
   </div>
 </div>
 
+<!-- DETAIL PAGE -->
 <div class="dpage" id="dpage">
   <div class="dhdr">
-    <button class="bbtn" onclick="document.getElementById('dpage').classList.remove('open')">
-      <i class="ti ti-arrow-left" aria-hidden="true"></i> Back
-    </button>
+    <button class="bbtn" onclick="document.getElementById('dpage').classList.remove('open')"><i class="ti ti-arrow-left" aria-hidden="true"></i> Back</button>
     <div style="flex:1;min-width:0">
       <div class="dhdr-code" id="dCode"></div>
       <div class="dhdr-sys" id="dSys"></div>
@@ -349,37 +476,326 @@ body{color:var(--txt);font-family:'Inter',sans-serif;line-height:1.5;display:fle
 </div>
 
 <script>
+// ===== OBD DATABASE =====
+const OBD_DB={
+  volvo:{label:"Volvo",models:{
+    "S40/V40":{years:[1996,2004],lhd:{zone:"under-left",pos:"Left of steering column, above pedals"},rhd:{zone:"under-right",pos:"Right of steering column, above pedals"},tip:"May be behind a small snap-off cover"},
+    "S60":{years:[2000,2024],lhd:{zone:"under-left",pos:"Under dash, left of steering column"},rhd:{zone:"under-right",pos:"Under dash, right of steering column"},tip:"Angle a phone flashlight upward to spot it"},
+    "S80":{years:[1998,2016],lhd:{zone:"under-left",pos:"Under dash left, near hood release"},rhd:{zone:"under-right",pos:"Under dash right, near hood release"},tip:"Look just above and left/right of the pedal cluster"},
+    "V50":{years:[2004,2012],lhd:{zone:"under-left",pos:"Left of steering column, above pedals"},rhd:{zone:"under-right",pos:"Right of steering column, above pedals"},tip:"Black 16-pin connector, no cover"},
+    "V70/XC70":{years:[1997,2016],lhd:{zone:"under-left",pos:"Under left dash, near steering column"},rhd:{zone:"under-right",pos:"Under right dash, near steering column"},tip:"Sometimes behind a removable plastic flap"},
+    "XC60":{years:[2008,2024],lhd:{zone:"under-left",pos:"Lower left dash, driver footwell"},rhd:{zone:"under-right",pos:"Lower right dash, driver footwell"},tip:"Easily visible — no cover on most models"},
+    "XC90":{years:[2002,2024],lhd:{zone:"under-left",pos:"Left of steering column, driver footwell"},rhd:{zone:"under-right",pos:"Right of steering column, driver footwell"},tip:"Gen 1 (2002–2014) may have a cover flap"},
+  }},
+  bmw:{label:"BMW",models:{
+    "1 Series":{years:[2004,2024],lhd:{zone:"under-left",pos:"Under left dash, left of steering column"},rhd:{zone:"under-right",pos:"Under right dash, right of column"},tip:"Look above the fuse box access area"},
+    "3 Series":{years:[1996,2024],lhd:{zone:"under-left",pos:"Under left dash near hood release"},rhd:{zone:"under-right",pos:"Under right dash near hood release"},tip:"E46 (1998–2005): also has a round 20-pin OBD1 port under the hood"},
+    "5 Series":{years:[1996,2024],lhd:{zone:"under-left",pos:"Lower left dash, above pedals"},rhd:{zone:"under-right",pos:"Lower right dash, above pedals"},tip:"F10/G30 models: port faces downward"},
+    "X3/X5":{years:[2003,2024],lhd:{zone:"under-left",pos:"Driver footwell, under dash"},rhd:{zone:"under-right",pos:"Driver footwell, under dash"},tip:"Look straight up from the driver seat footwell"},
+  }},
+  mercedes:{label:"Mercedes-Benz",models:{
+    "A-Class":{years:[1997,2024],lhd:{zone:"under-left",pos:"Left of steering column, behind small cover"},rhd:{zone:"under-right",pos:"Right of column, behind small cover"},tip:"Snap off the cover — no tools needed"},
+    "C-Class":{years:[1996,2024],lhd:{zone:"under-left",pos:"Under left dash near hood release lever"},rhd:{zone:"under-right",pos:"Under right dash near hood release lever"},tip:"W204/W205: facing downward, look for a gray 16-pin plug"},
+    "E-Class":{years:[1996,2024],lhd:{zone:"under-left",pos:"Under left dash, adjacent to emergency red handle"},rhd:{zone:"under-right",pos:"Under right dash, adjacent to red handle"},tip:"W210 (pre-2002): port may be under the hood near fuse box"},
+    "GLC/GLK":{years:[2008,2024],lhd:{zone:"under-left",pos:"Driver footwell, lower left dash"},rhd:{zone:"under-right",pos:"Driver footwell, lower right dash"},tip:"Easy access — no cover on most SUV models"},
+  }},
+  audi:{label:"Audi",models:{
+    "A3":{years:[1996,2024],lhd:{zone:"under-left",pos:"Under left dash, left of column"},rhd:{zone:"under-right",pos:"Under right dash, right of column"},tip:"8L/8P: faces down. 8V (2013+): slightly recessed"},
+    "A4":{years:[1996,2024],lhd:{zone:"under-left",pos:"Lower left dash, above pedals"},rhd:{zone:"under-right",pos:"Lower right dash, above pedals"},tip:"B6/B7: look above the accelerator pedal"},
+    "A6":{years:[1997,2024],lhd:{zone:"under-left",pos:"Driver side under dash, near column"},rhd:{zone:"under-right",pos:"Driver side under dash, near column"},tip:"C5 (1997–2004): check under the ashtray panel too"},
+    "Q5/Q7":{years:[2005,2024],lhd:{zone:"under-left",pos:"Left footwell, under dash"},rhd:{zone:"under-right",pos:"Right footwell, under dash"},tip:"No cover — open plug faces downward"},
+  }},
+  volkswagen:{label:"Volkswagen",models:{
+    "Golf/GTI":{years:[1996,2024],lhd:{zone:"under-left",pos:"Under left dash, left of steering column"},rhd:{zone:"under-right",pos:"Under right dash, right of column"},tip:"Mk4–Mk7: faces down and slightly left"},
+    "Passat":{years:[1996,2024],lhd:{zone:"under-left",pos:"Lower left dash, above pedals"},rhd:{zone:"under-right",pos:"Lower right dash, above pedals"},tip:"B5/B6: may have a snap-on cover"},
+    "Tiguan":{years:[2007,2024],lhd:{zone:"under-left",pos:"Driver footwell, under dash"},rhd:{zone:"under-right",pos:"Driver footwell, under dash"},tip:"Easy to spot — no cover, faces driver"},
+    "Polo":{years:[2001,2024],lhd:{zone:"under-left",pos:"Under left dash near column"},rhd:{zone:"under-right",pos:"Under right dash near column"},tip:"Tucked high — use a flashlight"},
+  }},
+  toyota:{label:"Toyota",models:{
+    "Corolla":{years:[1996,2024],lhd:{zone:"under-left",pos:"Under left dash, above accelerator pedal"},rhd:{zone:"under-right",pos:"Under right dash, above accelerator pedal"},tip:"May be hidden by floor mat — pull it back"},
+    "Camry":{years:[1996,2024],lhd:{zone:"under-left",pos:"Left of steering column, facing down"},rhd:{zone:"under-right",pos:"Right of steering column, facing down"},tip:"Usually no cover — easy to spot"},
+    "RAV4":{years:[1996,2024],lhd:{zone:"under-left",pos:"Driver footwell, under dash"},rhd:{zone:"under-right",pos:"Driver footwell, under dash"},tip:"Above the brake pedal on most models"},
+    "Yaris":{years:[1999,2024],lhd:{zone:"under-left",pos:"Under left dash, near column"},rhd:{zone:"under-right",pos:"Under right dash, near column"},tip:"Very compact — look just above the pedal cluster"},
+  }},
+  ford:{label:"Ford",models:{
+    "Focus":{years:[1998,2024],lhd:{zone:"under-left",pos:"Under left dash, above pedals"},rhd:{zone:"under-right",pos:"Under right dash, above pedals"},tip:"Mk1/Mk2: may be behind a breakaway cover"},
+    "Fiesta":{years:[1996,2024],lhd:{zone:"under-left",pos:"Under left dash, near column"},rhd:{zone:"under-right",pos:"Under right dash, near column"},tip:"Often labeled — look for DLC text on trim"},
+    "Mondeo":{years:[1996,2024],lhd:{zone:"under-left",pos:"Lower left dash, driver side"},rhd:{zone:"under-right",pos:"Lower right dash, driver side"},tip:"Mk3/Mk4: hinged cover — press tab to release"},
+  }},
+  honda:{label:"Honda",models:{
+    "Civic":{years:[1996,2024],lhd:{zone:"under-left",pos:"Under left dash, left of column"},rhd:{zone:"under-right",pos:"Under right dash, right of column"},tip:"6th–10th gen: faces down, look above pedals"},
+    "CR-V":{years:[1997,2024],lhd:{zone:"under-left",pos:"Driver footwell, under dash"},rhd:{zone:"under-right",pos:"Driver footwell, under dash"},tip:"Usually uncovered — easy access"},
+    "Accord":{years:[1996,2024],lhd:{zone:"under-left",pos:"Under left dash, above pedals"},rhd:{zone:"under-right",pos:"Under right dash, above pedals"},tip:"7th gen (2002–2007): small snap-off cover"},
+  }},
+  tesla:{label:"Tesla",models:{
+    "Model 3":{years:[2017,2024],lhd:{zone:"console",pos:"Center console, inside the front compartment"},rhd:{zone:"console",pos:"Center console, inside the front compartment"},tip:"Not under the dash — it's in the front center console bin"},
+    "Model Y":{years:[2019,2024],lhd:{zone:"console",pos:"Center console, front compartment"},rhd:{zone:"console",pos:"Center console, front compartment"},tip:"Same location as Model 3 — inside console storage"},
+    "Model S":{years:[2012,2024],lhd:{zone:"under-left",pos:"Under left dash, near column"},rhd:{zone:"under-right",pos:"Under right dash, near column"},tip:"Pre-2021: standard dash location"},
+  }},
+  hyundai:{label:"Hyundai",models:{
+    "i30":{years:[2007,2024],lhd:{zone:"under-left",pos:"Under left dash, left of column"},rhd:{zone:"under-right",pos:"Under right dash, right of column"},tip:"Open and accessible — no cover"},
+    "Tucson":{years:[2004,2024],lhd:{zone:"under-left",pos:"Driver footwell, under dash"},rhd:{zone:"under-right",pos:"Driver footwell, under dash"},tip:"Look above and left of the brake pedal"},
+    "i20":{years:[2008,2024],lhd:{zone:"under-left",pos:"Under left dash near column"},rhd:{zone:"under-right",pos:"Under right dash near column"},tip:"May be tight — use a phone flashlight"},
+  }},
+};
+
+function getSVG(zone,drive){
+  const isRHD=drive==='RHD';
+  const steerX=isRHD?270:90, portX=isRHD?250:70, portLbl=isRHD?260:80;
+  if(zone==='console'){return `<svg viewBox="0 0 360 220" xmlns="http://www.w3.org/2000/svg">
+    <rect x="10" y="10" width="340" height="200" rx="16" fill="#111827" stroke="#1e2d40" stroke-width="1.5"/>
+    <rect x="20" y="20" width="320" height="80" rx="8" fill="#1a2235" stroke="#1e2d40"/>
+    <text x="180" y="68" text-anchor="middle" fill="#4a5568" font-size="11" font-family="Inter">Dashboard</text>
+    <rect x="130" y="110" width="100" height="90" rx="8" fill="#1a2235" stroke="#c8a96e" stroke-width="2"/>
+    <text x="180" y="145" text-anchor="middle" fill="#8899aa" font-size="10" font-family="Inter">Center Console</text>
+    <rect x="152" y="155" width="56" height="28" rx="5" fill="rgba(200,169,110,0.15)" stroke="#c8a96e" stroke-width="1.5"/>
+    <text x="180" y="174" text-anchor="middle" fill="#c8a96e" font-size="9" font-weight="600" font-family="Inter">OBD-II PORT</text>
+    <defs><marker id="arr" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#c8a96e"/></marker></defs>
+    <line x1="180" y1="107" x2="180" y2="93" stroke="#c8a96e" stroke-width="1.8" marker-end="url(#arr)"/>
+    <text x="180" y="90" text-anchor="middle" fill="#c8a96e" font-size="10" font-family="Inter" font-weight="500">Port here</text>
+  </svg>`;}
+  return `<svg viewBox="0 0 360 220" xmlns="http://www.w3.org/2000/svg">
+    <defs><marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#c8a96e"/></marker></defs>
+    <rect x="10" y="10" width="340" height="200" rx="16" fill="#111827" stroke="#1e2d40" stroke-width="1.5"/>
+    <path d="M30 60 Q180 20 330 60 L310 90 Q180 55 50 90 Z" fill="#1a2235" stroke="#1e2d40"/>
+    <text x="180" y="76" text-anchor="middle" fill="#4a5568" font-size="9" font-family="Inter">Windscreen</text>
+    <path d="M40 95 Q180 75 320 95 L320 130 Q180 115 40 130 Z" fill="#1a2235" stroke="#1e2d40" stroke-width="1.2"/>
+    <text x="180" y="116" text-anchor="middle" fill="#4a5568" font-size="10" font-family="Inter">Dashboard</text>
+    <circle cx="${steerX}" cy="165" r="30" fill="none" stroke="#1e2d40" stroke-width="2"/>
+    <circle cx="${steerX}" cy="165" r="18" fill="none" stroke="#2a3a50" stroke-width="1.5"/>
+    <line x1="${steerX}" y1="135" x2="${steerX}" y2="195" stroke="#2a3a50" stroke-width="1.2"/>
+    <line x1="${steerX-30}" y1="165" x2="${steerX+30}" y2="165" stroke="#2a3a50" stroke-width="1.2"/>
+    <text x="${steerX}" y="201" text-anchor="middle" fill="#4a5568" font-size="9" font-family="Inter">Steering wheel</text>
+    <rect x="${portX-26}" y="128" width="52" height="22" rx="5" fill="rgba(200,169,110,0.12)" stroke="#c8a96e" stroke-width="1.8"/>
+    <text x="${portLbl}" y="143" text-anchor="middle" fill="#c8a96e" font-size="9" font-weight="600" font-family="Inter">OBD-II PORT</text>
+    <line x1="${portLbl}" y1="112" x2="${portLbl}" y2="126" stroke="#c8a96e" stroke-width="1.8" marker-end="url(#arrowhead)"/>
+    <text x="${portLbl}" y="109" text-anchor="middle" fill="#c8a96e" font-size="10" font-family="Inter" font-weight="500">Port here</text>
+    <rect x="20" y="188" width="320" height="16" rx="4" fill="#0d1117" stroke="#1e2d40"/>
+    <text x="180" y="200" text-anchor="middle" fill="#4a5568" font-size="9" font-family="Inter">Floor / Foot area</text>
+  </svg>`;}
+
+function populateMakes(){
+  const sel=document.getElementById('selMake');
+  Object.keys(OBD_DB).forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=OBD_DB[k].label;sel.appendChild(o);});
+}
+function onMakeChange(){
+  const make=document.getElementById('selMake').value;
+  const ms=document.getElementById('selModel'),ys=document.getElementById('selYear');
+  ms.innerHTML='<option value="">Select model…</option>';ys.innerHTML='<option value="">Year…</option>';
+  ys.disabled=true;ms.disabled=!make;
+  if(!make)return;
+  Object.keys(OBD_DB[make].models).forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=m;ms.appendChild(o);});
+}
+function onModelChange(){
+  const make=document.getElementById('selMake').value,model=document.getElementById('selModel').value;
+  const ys=document.getElementById('selYear');
+  ys.innerHTML='<option value="">Year…</option>';ys.disabled=!model;
+  if(!make||!model)return;
+  const[from,to]=OBD_DB[make].models[model].years;
+  for(let y=to;y>=from;y--){const o=document.createElement('option');o.value=y;o.textContent=y;ys.appendChild(o);}
+}
+let selectedDrive='LHD';
+function setDrive(d){
+  selectedDrive=d;
+  document.getElementById('btnLHD').classList.toggle('sel',d==='LHD');
+  document.getElementById('btnRHD').classList.toggle('sel',d==='RHD');
+}
+function findPort(){
+  const make=document.getElementById('selMake').value,model=document.getElementById('selModel').value,year=document.getElementById('selYear').value;
+  if(!make||!model||!year){alert('Please select make, model and year first.');return;}
+  const data=OBD_DB[make].models[model];
+  const side=selectedDrive==='RHD'?data.rhd:data.lhd;
+  document.getElementById('resultTitle').textContent=`${OBD_DB[make].label} ${model} (${year})`;
+  document.getElementById('resultSub').textContent=selectedDrive==='RHD'?'Right-hand drive':'Left-hand drive';
+  document.getElementById('resultBadge').textContent=selectedDrive;
+  document.getElementById('svgWrap').innerHTML=getSVG(side.zone,selectedDrive);
+  const dSide=selectedDrive==='RHD'?'right':'left';
+  const steps=side.zone==='console'?[
+    {s:"Sit in the driver's seat",d:"<strong>Look at the center console</strong> between the two front seats."},
+    {s:"Open the front compartment",d:"Open the front section of the center console where the USB ports are."},
+    {s:"Locate the OBD-II port",d:`The <strong>16-pin OBD port</strong> is inside this compartment. ${side.pos}`},
+  ]:[
+    {s:"Sit in the driver's seat",d:`Look under the dashboard on the <strong>${dSide} side</strong>, below the steering wheel.`},
+    {s:"Look under the dash",d:`<strong>${side.pos}</strong>. You may need to crouch or use a flashlight.`},
+    {s:"Locate the 16-pin connector",d:"The OBD-II port is a trapezoidal 16-pin plug, usually black or dark grey. Plug in the adapter firmly."},
+  ];
+  document.getElementById('locSteps').innerHTML=steps.map((s,i)=>`
+    <div class="loc-step">
+      <div class="step-num">${i+1}</div>
+      <div class="step-txt"><strong>${s.s}</strong><br>${s.d}</div>
+    </div>`).join('');
+  document.getElementById('tipTxt').textContent=data.tip||"If you still cannot find it, check your owner's manual under Diagnostic port.";
+  const rc=document.getElementById('resultCard');
+  rc.classList.add('show');
+  rc.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function enterApp(){
+  const ls=document.getElementById('locatorScreen');
+  const ma=document.getElementById('mainApp');
+  ls.style.opacity='0';ls.style.transition='opacity .3s ease';
+  setTimeout(()=>{
+    ls.style.display='none';
+    ma.style.display='flex';
+    requestAnimationFrame(()=>{ma.classList.add('visible');});
+  },300);
+}
+function goBackToLocator(){
+  const ls=document.getElementById('locatorScreen');
+  const ma=document.getElementById('mainApp');
+  ma.classList.remove('visible');
+  setTimeout(()=>{
+    ma.style.display='none';
+    ls.style.display='flex';ls.style.opacity='0';
+    requestAnimationFrame(()=>{ls.style.opacity='1';});
+  },350);
+}
+
+// ===== DTC / LIVE / SERVICE =====
 const DB=[
-  {code:"P0016",volvo:"ECM-670C",desc:"Camshaft position sensor — intake side, signal high",type:"generic",sys:"Engine / Camshaft",sev:"medium",causes:["Stretched or worn timing chain","Low engine oil pressure","Faulty intake camshaft position sensor","Oil control valve (OCV) clogged","Damaged tone ring on camshaft"],repairs:["Check oil level and pressure","Inspect timing chain for slack or wear","Clean or replace the OCV","Replace camshaft position sensor","Replace timing chain kit if worn"]},
-  {code:"P0017",volvo:"ECM-670D",desc:"Camshaft position sensor — exhaust side, signal high",type:"generic",sys:"Engine / Camshaft",sev:"medium",causes:["Worn timing chain or tensioner","Faulty exhaust camshaft position sensor","Stuck or dirty VVT solenoid","Low oil pressure to VVT system"],repairs:["Inspect and replace timing chain tensioner","Replace exhaust camshaft position sensor","Clean VVT solenoid, replace if faulty","Check and change engine oil if degraded"]},
-  {code:"P0030",volvo:"ECM-2400",desc:"Front oxygen sensor bank 1 — heater circuit fault",type:"generic",sys:"Exhaust system",sev:"medium",causes:["Blown fuse for lambda sensor heater","Open circuit in sensor heater wiring","Faulty oxygen sensor","ECM output driver failure"],repairs:["Check sensor heater fuse","Inspect wiring harness for breaks","Replace front oxygen sensor bank 1","Check ECM connector pins for damage"]},
-  {code:"P0202",volvo:"ECM-210B",desc:"Fuel injector cylinder 2 — circuit signal missing",type:"generic",sys:"Fuel system",sev:"high",causes:["Open or shorted wiring to injector 2","Faulty fuel injector cylinder 2","ECM driver circuit failure","Corroded injector connector"],repairs:["Test injector resistance (12–16 Ω)","Check wiring continuity from ECM","Replace injector connector if corroded","Replace injector if out of spec"]},
-  {code:"P0234",volvo:"ECM-1507",desc:"Turbocharger — overboost condition detected",type:"generic",sys:"Turbo",sev:"high",causes:["Stuck or faulty boost pressure solenoid","Cracked or disconnected boost hose","Faulty charge pressure sensor","Wastegate actuator stuck closed"],repairs:["Inspect all boost hoses for cracks","Test boost pressure solenoid","Replace charge pressure sensor if incorrect","Check wastegate actuator rod","Perform ECM software update if available"]},
-  {code:"P0237",volvo:"ECM-1510D",desc:"Charge pressure sensor — signal too low",type:"generic",sys:"Turbo",sev:"medium",causes:["Faulty boost pressure sensor","Open circuit in sensor wiring","Sensor connector corroded","Vacuum leak at sensor port"],repairs:["Inspect sensor connector and wiring","Test sensor with known pressure","Replace boost pressure sensor","Check vacuum lines at sensor"]},
-  {code:"P0700",volvo:"ECM-5100",desc:"Malfunction indicator from TCM — transmission fault",type:"generic",sys:"Transmission",sev:"high",causes:["TCM has stored its own fault codes","CAN bus communication failure","Low transmission fluid","Internal transmission fault"],repairs:["Read TCM-specific codes with scanner","Check transmission fluid level","Inspect CAN bus wiring","Service transmission if fluid is degraded"]},
-  {code:"P0727",volvo:"ECM-330B",desc:"Engine speed (RPM) sensor — signal missing",type:"generic",sys:"Engine",sev:"medium",causes:["Damaged crankshaft position sensor","Cracked or missing tone ring","Open circuit in sensor wiring","Excessive air gap"],repairs:["Inspect crankshaft sensor for damage","Check tone ring for missing teeth","Measure sensor air gap (0.5–1.5 mm)","Replace crankshaft position sensor"]},
-  {code:"P1102",volvo:"ECM-135F",desc:"Mass air flow (MAF) sensor — input signal too high",type:"volvo",sys:"Air intake",sev:"medium",causes:["Short circuit to positive in MAF wiring","Faulty MAF sensor","Air leak between MAF and throttle body","Dirty or contaminated MAF sensor"],repairs:["Clean MAF sensor with MAF cleaner spray","Inspect wiring for short to positive","Check all intake hoses for leaks","Replace MAF sensor if cleaning fails"]},
-  {code:"P1120",volvo:"ECM-1400",desc:"Throttle position sensor — signal out of range",type:"volvo",sys:"Engine management",sev:"medium",causes:["Faulty throttle position sensor (TPS)","Wiring issue to TPS","Electronic throttle module (ETM) failure","Poor ground at throttle body"],repairs:["Inspect TPS connector and wiring","Clean throttle body contact area","Replace ETM if needed","Check ground straps on engine","Recalibrate throttle after replacement"]},
-  {code:"P1171",volvo:"ECM-2800",desc:"Long-term fuel trim — upper limit reached, lean",type:"volvo",sys:"Fuel system",sev:"medium",causes:["Air intake leak downstream of MAF","Dirty or failing MAF sensor","Weak fuel pump","Clogged fuel injectors"],repairs:["Check intake hoses and gaskets for leaks","Clean or replace MAF sensor","Test fuel pressure (3–4 bar at idle)","Clean or replace fuel injectors"]},
-  {code:"P1238",volvo:"ECM-1517",desc:"Turbocharger boost pressure — limit exceeded",type:"volvo",sys:"Turbo",sev:"high",causes:["Damaged or leaking vacuum reservoir","Faulty boost control solenoid","Stuck wastegate","Boost hose cracked or disconnected"],repairs:["Inspect vacuum reservoir and hoses","Replace boost control solenoid","Check wastegate actuator with vacuum pump","Repair or replace cracked boost pipe"]},
-  {code:"P1332",volvo:"ECM-4200",desc:"Variable valve timing (VVT) solenoid — malfunction",type:"volvo",sys:"VVT system",sev:"medium",causes:["Faulty VVT solenoid","Clogged oil passage to VVT actuator","Low oil pressure","Dirty engine oil","Wiring fault to solenoid"],repairs:["Replace engine oil and filter first","Clean oil passages with engine flush","Test solenoid resistance (6–8 Ω)","Replace VVT solenoid if out of spec","Check oil pressure with mechanical gauge"]},
-  {code:"P1480",volvo:"ECM-620B",desc:"Engine cooling fan module — signal too low",type:"volvo",sys:"Cooling system",sev:"medium",causes:["Faulty fan control module","Open circuit in fan control wiring","Blown fuse for cooling fan","Failed cooling fan motor"],repairs:["Check cooling fan fuse","Test voltage at fan module connector","Replace cooling fan control module","Inspect fan motor for seized bearings"]},
-  {code:"P1600",volvo:"ECM-9900",desc:"ECM — battery supply malfunction",type:"volvo",sys:"ECM / Power supply",sev:"high",causes:["Weak or failing battery","Corroded battery terminals","Poor ECM main ground connection","Faulty main relay","Alternator not charging"],repairs:["Load test battery — replace if below 10.5V","Clean battery terminals and grounds","Check main relay operation","Test alternator output (13.8–14.4V)"]},
-  {code:"P1618",volvo:"ECM-5130",desc:"TCM/ECM communication — signal missing",type:"volvo",sys:"CAN bus",sev:"high",causes:["CAN bus wiring fault between ECM and TCM","Faulty TCM","ECM communication driver failure","Bad ground on ECM or TCM"],repairs:["Check CAN bus wiring for breaks","Measure CAN resistance (~120 Ω)","Inspect ECM and TCM connectors","Replace TCM if not responding"]},
-  {code:"P1646",volvo:"ECM-245C",desc:"Front oxygen sensor bank 1 — signal too high",type:"volvo",sys:"Exhaust system",sev:"medium",causes:["Short circuit to voltage in sensor wiring","Faulty lambda sensor","Exhaust leak upstream of sensor","ECM reference voltage fault"],repairs:["Inspect sensor wiring for shorts","Check for exhaust manifold leaks","Replace front oxygen sensor bank 1","Verify ECM 5V reference at connector"]},
-  {code:"P2101",volvo:"ECM-1300",desc:"Electronic throttle module (ETM) — signal fault",type:"volvo",sys:"Engine management",sev:"high",causes:["Faulty ETM — very common on 1999–2002 Volvos","Wiring fault to ETM","Carbon buildup on throttle plate","ECM output driver failure"],repairs:["Clean throttle body thoroughly","Test ETM motor resistance and potentiometers","Replace ETM if out of spec — known Volvo issue","Recalibrate throttle with VIDA software"]},
-  {code:"P0A80",volvo:"ECM-HV01",desc:"High-voltage battery assembly — failure detected",type:"volvo",sys:"HV Battery",sev:"high",causes:["One or more degraded HV battery cells","Poor HV battery connector contact","Battery management system (BMS) fault","Thermal management failure"],repairs:["Read BMS sub-codes for specific cell info","Inspect HV connectors with insulated tools","Replace faulty battery module or full pack","Check battery cooling system"]},
+  {code:"P0016",volvo:"ECM-670C",desc:"Camshaft position sensor — intake side, signal high",type:"generic",sys:"Engine / Camshaft",sev:"medium",causes:["Stretched or worn timing chain","Low engine oil pressure","Faulty intake camshaft position sensor","Oil control valve (OCV) clogged","Damaged tone ring"],repairs:["Check oil level and pressure","Inspect timing chain for wear","Clean or replace the OCV","Replace camshaft position sensor","Replace timing chain kit if worn"]},
+  {code:"P0030",volvo:"ECM-2400",desc:"Front oxygen sensor bank 1 — heater circuit fault",type:"generic",sys:"Exhaust system",sev:"medium",causes:["Blown fuse for lambda heater","Open circuit in heater wiring","Faulty oxygen sensor","ECM output driver failure"],repairs:["Check heater fuse","Inspect wiring for breaks","Replace front O2 sensor bank 1","Check ECM connector pins"]},
+  {code:"P0202",volvo:"ECM-210B",desc:"Fuel injector cylinder 2 — circuit signal missing",type:"generic",sys:"Fuel system",sev:"high",causes:["Open or shorted wiring to injector","Faulty fuel injector","ECM driver circuit failure","Corroded injector connector"],repairs:["Test injector resistance (12–16 Ω)","Check wiring from ECM","Replace connector if corroded","Replace injector if out of spec"]},
+  {code:"P0234",volvo:"ECM-1507",desc:"Turbocharger — overboost condition detected",type:"generic",sys:"Turbo",sev:"high",causes:["Stuck boost solenoid","Cracked boost hose","Faulty charge pressure sensor","Wastegate stuck closed"],repairs:["Inspect all boost hoses","Test boost solenoid","Replace charge pressure sensor","Check wastegate rod","ECM software update if available"]},
+  {code:"P0700",volvo:"ECM-5100",desc:"Malfunction indicator from TCM — transmission fault",type:"generic",sys:"Transmission",sev:"high",causes:["TCM stored its own fault","CAN bus failure","Low transmission fluid","Internal transmission fault"],repairs:["Read TCM codes with scanner","Check fluid level","Inspect CAN bus wiring","Service transmission if degraded"]},
+  {code:"P1102",volvo:"ECM-135F",desc:"Mass air flow (MAF) sensor — input signal too high",type:"volvo",sys:"Air intake",sev:"medium",causes:["Short to positive in MAF wiring","Faulty MAF sensor","Air leak between MAF and throttle","Dirty MAF sensor"],repairs:["Clean MAF with MAF cleaner","Inspect wiring for shorts","Check intake hoses for leaks","Replace MAF sensor if needed"]},
+  {code:"P1171",volvo:"ECM-2800",desc:"Long-term fuel trim — upper limit, lean mixture",type:"volvo",sys:"Fuel system",sev:"medium",causes:["Intake leak downstream of MAF","Failing MAF sensor","Weak fuel pump","Clogged injectors"],repairs:["Check intake hoses for leaks","Clean or replace MAF","Test fuel pressure (3–4 bar)","Clean or replace injectors"]},
+  {code:"P1238",volvo:"ECM-1517",desc:"Turbocharger boost pressure — limit exceeded",type:"volvo",sys:"Turbo",sev:"high",causes:["Leaking vacuum reservoir","Faulty boost control solenoid","Stuck wastegate","Cracked boost hose"],repairs:["Inspect vacuum reservoir","Replace boost solenoid","Check wastegate actuator","Repair cracked boost pipe"]},
+  {code:"P1332",volvo:"ECM-4200",desc:"Variable valve timing (VVT) solenoid — malfunction",type:"volvo",sys:"VVT system",sev:"medium",causes:["Faulty VVT solenoid","Clogged oil passage","Low oil pressure","Dirty engine oil","Wiring fault"],repairs:["Replace oil and filter first","Clean oil passages","Test solenoid (6–8 Ω)","Replace solenoid if needed","Check oil pressure"]},
+  {code:"P1600",volvo:"ECM-9900",desc:"ECM — battery supply malfunction",type:"volvo",sys:"ECM / Power supply",sev:"high",causes:["Weak battery","Corroded terminals","Poor ECM ground","Faulty main relay","Alternator not charging"],repairs:["Load test battery","Clean terminals and grounds","Check main relay","Test alternator (13.8–14.4V)"]},
+  {code:"P1618",volvo:"ECM-5130",desc:"TCM/ECM communication — signal missing",type:"volvo",sys:"CAN bus",sev:"high",causes:["CAN bus wiring fault","Faulty TCM","ECM driver failure","Bad ground"],repairs:["Check CAN wiring","Measure CAN resistance (~120Ω)","Inspect ECM/TCM connectors","Replace TCM if not responding"]},
+  {code:"P2101",volvo:"ECM-1300",desc:"Electronic throttle module (ETM) — signal fault",type:"volvo",sys:"Engine management",sev:"high",causes:["Faulty ETM (common 1999–2002)","Wiring fault","Carbon buildup on throttle","ECM driver failure"],repairs:["Clean throttle body","Test ETM motor/potentiometers","Replace ETM — known Volvo issue","Recalibrate with VIDA"]},
 ];
+// extra codes that can be "found" by scan
+const SCANNABLE=[DB[4],DB[5],DB[8],DB[9],DB[10],DB[11]];
+let storedCodes=[];
+let histCodes2=[];
+let scanning=false;
 
-const activeCodes=[DB[4],DB[3]];
-const histCodes=[DB[0],DB[11]];
+function tsNow(){
+  const n=new Date();
+  return n.toLocaleDateString("en-GB")+' '+n.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
+}
+function dtcRow(c,dim){
+  const ts=c._ts?`<div style="font-size:9px;color:var(--txt3);font-family:monospace;margin-top:3px;display:flex;align-items:center;gap:4px"><i class="ti ti-clock" style="font-size:10px"></i>${c._ts}</div>`:"";
+  return`<div class="frow" style="${dim?"opacity:.4":""}" onclick="openDetail('${c.code}')">
+  <div style="flex-shrink:0"><div class="fcode" style="${dim?"color:var(--txt3)":""}">${c.code}</div><div class="fvolvo">${c.volvo}</div></div>
+  <div style="flex:1;min-width:0"><div class="fdesc">${c.desc}</div><div class="fsys">${c.sys}</div>${ts}</div>
+  <i class="ti ti-chevron-right" style="color:var(--txt3);font-size:14px;flex-shrink:0" aria-hidden="true"></i>
+</div>`;}
+
+function buildDTC(){
+  const al=document.getElementById("activeDTC");
+  const cnt=document.getElementById("activeCount");
+  const sec=document.getElementById("activeSec");
+  if(storedCodes.length===0){
+    sec.style.display="none";
+  } else {
+    sec.style.display="block";
+    al.innerHTML=storedCodes.map(c=>dtcRow(c,false)).join("");
+    cnt.textContent=storedCodes.length+" code"+(storedCodes.length!==1?"s":"")+" stored";
+  }
+  document.getElementById("histDTC").innerHTML=histCodes2.length===0
+    ?'<div style="font-size:clamp(11px,1.8vw,12px);color:var(--txt3);padding:12px 0;text-align:center">No cleared codes</div>'
+    :histCodes2.map(c=>dtcRow(c,true)).join("");
+}
+
+function clearAllCodes(){
+  const cleared=storedCodes.map(c=>({...c,_ts:c._ts||tsNow()}));
+  histCodes2=[...histCodes2,...cleared];
+  storedCodes=[];
+  buildDTC();
+  // reset scan card to idle
+  resetScanIdle();
+}
+
+function resetScanIdle(){
+  document.getElementById("scanIconWrap").className="scan-icon-wrap idle";
+  document.getElementById("scanIcon").style.color="var(--txt3)";
+  document.getElementById("scanTitle").textContent="Scan for fault codes";
+  document.getElementById("scanSub").textContent="Connect your ELM327 adapter and press Scan to read live fault codes from the vehicle ECU.";
+  document.getElementById("scanProgress").classList.remove("show");
+  document.getElementById("scanProgressFill").style.width="0%";
+  document.getElementById("scanStepTxt").textContent="";
+  document.getElementById("scanResultBadge").innerHTML="";
+  document.getElementById("newFaultsList").innerHTML="";
+  document.getElementById("scanBtn").disabled=false;
+  document.getElementById("scanBtn").innerHTML='<i class="ti ti-radar" aria-hidden="true"></i> SCAN NOW';
+}
+
+function startScan(){
+  if(scanning)return;
+  scanning=true;
+  document.getElementById("scanBtn").disabled=true;
+  document.getElementById("scanResultBadge").innerHTML="";
+  document.getElementById("newFaultsList").innerHTML="";
+  document.getElementById("scanProgress").classList.add("show");
+  const wrap=document.getElementById("scanIconWrap");
+  const icon=document.getElementById("scanIcon");
+  wrap.className="scan-icon-wrap scanning";
+  icon.style.color="var(--acc)";
+  document.getElementById("scanTitle").textContent="Scanning…";
+  document.getElementById("scanSub").textContent="Reading fault codes from ECU. Please keep the ignition on.";
+
+  const steps=["Connecting to ECM…","Initialising protocol…","Reading ECU modules…","Reading fault codes…","Reading freeze frame data…","Scan complete"];
+  let step=0;
+  const pct=i=>Math.round(i/(steps.length-1)*100);
+
+  function nextStep(){
+    document.getElementById("scanStepTxt").textContent=steps[step];
+    document.getElementById("scanProgressFill").style.width=pct(step)+"%";
+    if(step<steps.length-1){step++;setTimeout(nextStep,700);}
+    else{setTimeout(finishScan,400);}
+  }
+  nextStep();
+}
+
+function finishScan(){
+  scanning=false;
+  // randomly pick 1-2 new codes not already stored
+  const existing=storedCodes.map(c=>c.code);
+  const available=SCANNABLE.filter(c=>!existing.includes(c.code));
+  const newCodes=available.sort(()=>Math.random()-.5).slice(0,Math.floor(Math.random()*2)+1).map(c=>({...c,_ts:tsNow()}));
+
+  const wrap=document.getElementById("scanIconWrap");
+  const icon=document.getElementById("scanIcon");
+  const badge=document.getElementById("scanResultBadge");
+  const list=document.getElementById("newFaultsList");
+
+  document.getElementById("scanProgressFill").style.width="100%";
+  document.getElementById("scanStepTxt").textContent="";
+
+  if(newCodes.length>0){
+    wrap.className="scan-icon-wrap done-err";
+    icon.style.color="var(--err)";
+    document.getElementById("scanTitle").textContent="Fault codes found";
+    document.getElementById("scanSub").textContent=newCodes.length+" new fault code"+(newCodes.length>1?"s were":" was")+" found and added to stored codes.";
+    badge.innerHTML=`<span class="scan-result-badge found"><i class="ti ti-alert-triangle" aria-hidden="true"></i> ${newCodes.length} new code${newCodes.length>1?"s":""} found</span>`;
+    list.innerHTML=newCodes.map(c=>`
+      <div class="frow" onclick="openDetail('${c.code}')" style="animation:slideUp .3s ease">
+        <div style="flex-shrink:0"><div class="fcode">${c.code}</div><div class="fvolvo">${c.volvo}</div></div>
+        <div style="flex:1;min-width:0"><div class="fdesc">${c.desc}</div><div class="fsys">${c.sys}</div></div>
+        <i class="ti ti-chevron-right" style="color:var(--txt3);font-size:14px;flex-shrink:0" aria-hidden="true"></i>
+      </div>`).join("");
+    storedCodes=[...storedCodes,...newCodes];
+    buildDTC();
+  } else {
+    wrap.className="scan-icon-wrap done-ok";
+    icon.style.color="var(--ok)";
+    document.getElementById("scanTitle").textContent="System clear";
+    document.getElementById("scanSub").textContent="No new fault codes found. All ECU modules responded normally.";
+    badge.innerHTML=`<span class="scan-result-badge clean"><i class="ti ti-check" aria-hidden="true"></i> No new codes found</span>`;
+  }
+
+  document.getElementById("scanBtn").disabled=false;
+  document.getElementById("scanBtn").innerHTML='<i class="ti ti-refresh" aria-hidden="true"></i> SCAN AGAIN';
+}
 const ivOpts=[
-  {km:5000,tag:"STANDARD",cls:"std",desc:"Older engines or harsh short-trip driving"},
-  {km:10000,tag:"STANDARD",cls:"std",desc:"Default interval for most Volvo petrol engines"},
-  {km:15000,tag:"EXTENDED",cls:"ext",desc:"Newer engines running full synthetic oil"},
-  {km:20000,tag:"LONG LIFE",cls:"ll",desc:"Volvo Long Life Service approved vehicles only"},
+  {km:5000,tag:"STANDARD",cls:"std",desc:"Older engines or harsh driving"},
+  {km:10000,tag:"STANDARD",cls:"std",desc:"Default for most Volvo petrol engines"},
+  {km:15000,tag:"EXTENDED",cls:"ext",desc:"Newer engines with full synthetic oil"},
+  {km:20000,tag:"LONG LIFE",cls:"ll",desc:"Volvo Long Life Service vehicles only"},
 ];
-
 let selIv=ivOpts[1],svcState="due",resetting=false,rLog=[];
 let lv={rpm:920,speed:0,coolant:83,throttle:11,maf:4.1,boost:0.08,voltage:13.9,fuelTrim:-1.5};
 const gCfg=[
@@ -392,106 +808,52 @@ const pCfg=[
   {k:"throttle",lbl:"Throttle position",u:"%",pid:"010B",max:100},
   {k:"maf",lbl:"Mass air flow",u:"g/s",pid:"0110",max:30},
   {k:"boost",lbl:"Boost pressure",u:"bar",pid:"010D",max:2},
-  {k:"fuelTrim",lbl:"Short-term fuel trim",u:"%",pid:"0106",max:25},
+  {k:"fuelTrim",lbl:"Fuel trim S/T",u:"%",pid:"0106",max:25},
 ];
 const fmt=k=>k==="rpm"?Math.round(lv[k]).toLocaleString():["maf","boost","voltage"].includes(k)?lv[k].toFixed(1):""+Math.round(lv[k]);
 const fmtP=k=>["maf","boost"].includes(k)?lv[k].toFixed(1):k==="fuelTrim"?(lv[k]>0?"+":"")+lv[k].toFixed(1):""+Math.round(lv[k]);
-const pct=(k,m)=>Math.min(Math.abs(lv[k])/m*100,100);
-
-function buildGauges(){
-  document.getElementById("gauges").innerHTML=gCfg.map(g=>`
-    <div class="gauge ${g.s(lv[g.k])}" id="ga-${g.k}">
-      <div class="gauge-top"><span class="gauge-lbl">${g.lbl}</span><div class="gauge-dot"></div></div>
-      <div class="gauge-val" id="gv-${g.k}">${fmt(g.k)}</div>
-      <div class="gauge-unit">${g.u}</div>
-      <div class="gauge-bar"><div class="gauge-fill" id="gf-${g.k}" style="width:${pct(g.k,g.max)}%"></div></div>
-    </div>`).join("");
-}
-function buildPID(){
-  document.getElementById("pidList").innerHTML=pCfg.map(p=>`
-    <div class="prow">
-      <span class="plbl">${p.lbl}<span class="ppid">${p.pid}</span></span>
-      <div class="pbar"><div class="pfill" id="pf-${p.k}" style="width:${Math.abs(lv[p.k])/p.max*100}%"></div></div>
-      <span class="pval" id="pv-${p.k}">${fmtP(p.k)} ${p.u}</span>
-    </div>`).join("");
-}
+const pct2=(k,m)=>Math.min(Math.abs(lv[k])/m*100,100);
+function buildGauges(){document.getElementById("gauges").innerHTML=gCfg.map(g=>`
+  <div class="gauge ${g.s(lv[g.k])}" id="ga-${g.k}">
+    <div class="gauge-top"><span class="gauge-lbl">${g.lbl}</span><div class="gauge-dot"></div></div>
+    <div class="gauge-val" id="gv-${g.k}">${fmt(g.k)}</div>
+    <div class="gauge-unit">${g.u}</div>
+    <div class="gauge-bar"><div class="gauge-fill" id="gf-${g.k}" style="width:${pct2(g.k,g.max)}%"></div></div>
+  </div>`).join("");}
+function buildPID(){document.getElementById("pidList").innerHTML=pCfg.map(p=>`
+  <div class="prow">
+    <span class="plbl">${p.lbl}<span class="ppid">${p.pid}</span></span>
+    <div class="pbar"><div class="pfill" id="pf-${p.k}" style="width:${Math.abs(lv[p.k])/p.max*100}%"></div></div>
+    <span class="pval" id="pv-${p.k}">${fmtP(p.k)} ${p.u}</span>
+  </div>`).join("");}
 function tick(){
   lv.rpm=700+Math.random()*2000;lv.coolant=80+Math.random()*9;lv.speed=Math.random()>.5?Math.random()*90:0;
   lv.voltage=13.3+Math.random()*.9;lv.throttle=4+Math.random()*35;lv.maf=1.5+Math.random()*9;
   lv.boost=.04+Math.random()*.45;lv.fuelTrim=-5+Math.random()*9;
   gCfg.forEach(g=>{
     const v=document.getElementById("gv-"+g.k),f=document.getElementById("gf-"+g.k),el=document.getElementById("ga-"+g.k);
-    if(v)v.textContent=fmt(g.k);if(f)f.style.width=pct(g.k,g.max)+"%";if(el)el.className="gauge "+g.s(lv[g.k]);
+    if(v)v.textContent=fmt(g.k);if(f)f.style.width=pct2(g.k,g.max)+"%";if(el)el.className="gauge "+g.s(lv[g.k]);
   });
   pCfg.forEach(p=>{
     const v=document.getElementById("pv-"+p.k),b=document.getElementById("pf-"+p.k);
     if(v)v.textContent=fmtP(p.k)+" "+p.u;if(b)b.style.width=Math.abs(lv[p.k])/p.max*100+"%";
   });
 }
-function dtcRow(c,dim){
-  return`<div class="frow" style="${dim?"opacity:.4":""}" onclick="openDetail('${c.code}')">
-    <div style="flex-shrink:0"><div class="fcode" style="${dim?"color:var(--txt3)":""}">${c.code}</div><div class="fvolvo">${c.volvo}</div></div>
-    <div style="flex:1;min-width:0"><div class="fdesc">${c.desc}</div><div class="fsys">${c.sys}</div></div>
-    <i class="ti ti-chevron-right" style="color:var(--txt3);font-size:14px;flex-shrink:0" aria-hidden="true"></i>
-  </div>`;
-}
-function buildDTC(){
-  document.getElementById("activeDTC").innerHTML=activeCodes.map(c=>dtcRow(c,false)).join("");
-  document.getElementById("histDTC").innerHTML=histCodes.map(c=>dtcRow(c,true)).join("");
-}
-let af="all";
-const fDefs=[{id:"all",l:"All"},{id:"generic",l:"Generic"},{id:"volvo",l:"Volvo"},{id:"high",l:"High"},{id:"Engine",l:"Engine"},{id:"Turbo",l:"Turbo"},{id:"Fuel",l:"Fuel"}];
-function buildFilters(){
-  document.getElementById("frow").innerHTML=fDefs.map(f=>`<button class="fb ${f.id===af?"on":""}" onclick="setF('${f.id}')">${f.l}</button>`).join("");
-}
-function setF(id){af=id;buildFilters();filterCodes();}
-function filterCodes(){
-  const q=document.getElementById("srch").value.toLowerCase();
-  const list=DB.filter(c=>{
-    const m=!q||c.code.toLowerCase().includes(q)||c.desc.toLowerCase().includes(q)||c.sys.toLowerCase().includes(q);
-    if(!m)return false;
-    if(af==="all")return true;if(af==="generic")return c.type==="generic";if(af==="volvo")return c.type==="volvo";
-    if(af==="high")return c.sev==="high";if(af==="Fuel")return c.sys.toLowerCase().includes("fuel");
-    return c.sys.includes(af);
-  });
-  document.getElementById("ccount").textContent=list.length+" codes found";
-  document.getElementById("clist").innerHTML=list.map(c=>`
-    <div class="ccard" onclick="openDetail('${c.code}')">
-      <div style="flex:1;min-width:0">
-        <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px;flex-wrap:wrap">
-          <span class="cbadge ${c.type}">${c.code}</span>
-          <span class="ctag ${c.type==="generic"?"g":"v"}">${c.type==="generic"?"Generic":"Volvo"}</span>
-          <span style="font-size:9px;margin-left:auto;font-weight:500;color:${c.sev==="high"?"var(--err)":c.sev==="medium"?"var(--warn)":"var(--ok)"}">${c.sev}</span>
-        </div>
-        <div style="font-size:clamp(11px,2vw,13px);color:var(--txt);margin-bottom:2px;line-height:1.4">${c.desc}</div>
-        <div style="font-size:clamp(9px,1.6vw,10px);color:var(--txt3)">${c.volvo} · ${c.sys}</div>
-      </div>
-      <i class="ti ti-chevron-right" style="color:var(--txt3);font-size:14px;flex-shrink:0" aria-hidden="true"></i>
-    </div>`).join("")||`<div style="color:var(--txt3);text-align:center;padding:24px">No codes found</div>`;
-}
-function buildIvGrid(){
-  document.getElementById("ivGrid").innerHTML=ivOpts.map(iv=>`
-    <div class="ivc ${iv.km===selIv.km?"sel":""}" onclick="pickIv(${iv.km})">
-      <div class="ivc-km">${iv.km/1000}K</div>
-      <div class="ivc-unit">km</div>
-      <div class="ivc-tag ${iv.cls}">${iv.tag}</div>
-      <div class="ivc-desc">${iv.desc}</div>
-    </div>`).join("");
-}
-function pickIv(km){
-  if(resetting)return;
-  selIv=ivOpts.find(i=>i.km===km);
-  if(svcState==="ok")svcState="due";
-  buildIvGrid();buildSvcStatus();
-}
+function buildIvGrid(){document.getElementById("ivGrid").innerHTML=ivOpts.map(iv=>`
+  <div class="ivc ${iv.km===selIv.km?"sel":""}" onclick="pickIv(${iv.km})">
+    <div class="ivc-km">${iv.km/1000}K</div>
+    <div class="ivc-unit">km</div>
+    <div class="ivc-tag ${iv.cls}">${iv.tag}</div>
+    <div class="ivc-desc">${iv.desc}</div>
+  </div>`).join("");}
+function pickIv(km){if(resetting)return;selIv=ivOpts.find(i=>i.km===km);if(svcState==="ok")svcState="due";buildIvGrid();buildSvcStatus();}
 function buildSvcStatus(){
   const lamp=document.getElementById("lamp"),ico=document.getElementById("lampIco"),lbl=document.getElementById("lampLbl");
-  const title=document.getElementById("lampTitle"),sub=document.getElementById("lampSub");
   const badge=document.getElementById("svcBadge"),btn=document.getElementById("rbtn");
   if(svcState==="ok"){
     lamp.className="lamp off";ico.style.color="var(--ok)";lbl.style.color="var(--ok)";lbl.textContent="CLEAR";
-    title.textContent="Service lamp cleared";
-    sub.textContent="Next service in "+selIv.km.toLocaleString()+" km — "+selIv.desc.toLowerCase()+".";
+    document.getElementById("lampTitle").textContent="Service lamp cleared";
+    document.getElementById("lampSub").textContent="Next service in "+selIv.km.toLocaleString()+" km.";
     badge.className="badge ok";badge.textContent="Reset complete";
     btn.disabled=true;btn.innerHTML='<i class="ti ti-check" aria-hidden="true"></i> Service lamp reset';
     document.getElementById("svcRows").innerHTML=`
@@ -499,8 +861,8 @@ function buildSvcStatus(){
       <div class="srow" style="border-bottom:none"><span class="slbl">Interval programmed</span><div class="sbar"><div class="sfill" style="width:100%;background:var(--acc)"></div></div><span class="sval">${selIv.km.toLocaleString()} km</span></div>`;
   } else {
     lamp.className="lamp on";ico.style.color="var(--warn)";lbl.style.color="var(--warn)";lbl.textContent="SERVICE";
-    title.textContent="Service reminder active";
-    sub.textContent="Select an interval below, then confirm to clear the lamp.";
+    document.getElementById("lampTitle").textContent="Service reminder active";
+    document.getElementById("lampSub").textContent="Select an interval below, then confirm to clear.";
     badge.className="badge due";badge.textContent="Overdue";
     btn.disabled=false;btn.innerHTML='<i class="ti ti-refresh" aria-hidden="true"></i> Reset service lamp';
     document.getElementById("svcRows").innerHTML=`
@@ -508,44 +870,34 @@ function buildSvcStatus(){
       <div class="srow" style="border-bottom:none"><span class="slbl">Selected interval</span><div class="sbar"><div class="sfill" style="width:60%;background:var(--acc)"></div></div><span class="sval">${selIv.km.toLocaleString()} km</span></div>`;
   }
   const logEl=document.getElementById("rlog");
-  logEl.innerHTML=rLog.length===0
-    ?'<div style="font-size:clamp(11px,1.8vw,12px);color:var(--txt3);padding:4px 0">No resets recorded yet</div>'
-    :[...rLog].reverse().map(r=>`<div class="logrow"><span class="log-type">${r.type}</span><span class="log-iv">${r.iv}</span><span class="log-ts">${r.ts}</span></div>`).join("");
+  logEl.innerHTML=rLog.length===0?'<div style="font-size:clamp(11px,1.8vw,12px);color:var(--txt3);padding:4px 0">No resets recorded yet</div>'
+    :[...rLog].reverse().map(r=>`<div class="logrow"><span style="font-size:clamp(11px,1.8vw,12px);color:var(--txt2)">${r.type}</span><span class="log-iv">${r.iv}</span><span style="font-size:10px;color:var(--txt3);font-family:monospace">${r.ts}</span></div>`).join("");
 }
 function confirmReset(){
   if(resetting)return;
-  document.getElementById("cbTxt").textContent="This will reset the service lamp and program the next reminder to "+selIv.km.toLocaleString()+" km ("+selIv.desc.toLowerCase()+"). Ensure oil and filter have been replaced before confirming.";
+  document.getElementById("cbTxt").textContent="This will reset the service lamp and set the next reminder to "+selIv.km.toLocaleString()+" km. Ensure oil and filter have been replaced.";
   document.getElementById("cbox").classList.add("show");
 }
 function startReset(){
   document.getElementById("cbox").classList.remove("show");
   resetting=true;document.getElementById("rbtn").disabled=true;
-  document.getElementById("ivGrid").style.opacity=".3";
-  document.getElementById("ivGrid").style.pointerEvents="none";
+  document.getElementById("ivGrid").style.opacity=".3";document.getElementById("ivGrid").style.pointerEvents="none";
   document.getElementById("lamp").className="lamp spin";
   const sc=document.getElementById("stepCard");sc.style.display="block";
-  const lbls=["Connecting to ECM","Authenticating session","Writing "+selIv.km.toLocaleString()+" km interval","Resetting service counter","Verifying reset","Complete"];
+  const lbls=["Connecting to ECM","Authenticating","Writing "+selIv.km.toLocaleString()+" km interval","Resetting counter","Verifying","Complete"];
   let step=0;
   function render(cur){
-    document.getElementById("stepRow").innerHTML=lbls.map((s,i)=>`
-      ${i>0?`<div class="sline ${i<=cur?"done":""}"></div>`:""}
-      <div class="sdot ${i<cur?"done":i===cur?"act":"pend"}">${i<cur?"✓":i+1}</div>`).join("");
+    document.getElementById("stepRow").innerHTML=lbls.map((s,i)=>`${i>0?`<div class="sline ${i<=cur?"done":""}"></div>`:""}<div class="sdot ${i<cur?"done":i===cur?"act":"pend"}">${i<cur?"✓":i+1}</div>`).join("");
     document.getElementById("stepMsg").textContent=lbls[cur];
     document.getElementById("progFill").style.width=Math.round(cur/(lbls.length-1)*100)+"%";
   }
-  function next(){
-    render(step);
-    if(step<lbls.length-1){step++;setTimeout(next,900);}
-    else{setTimeout(()=>{
-      resetting=false;svcState="ok";sc.style.display="none";
-      document.getElementById("ivGrid").style.opacity="1";
-      document.getElementById("ivGrid").style.pointerEvents="auto";
-      const now=new Date();
-      const ts=now.toLocaleDateString("en-GB")+" "+now.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
-      rLog.push({type:"Service lamp reset",iv:selIv.km.toLocaleString()+" km",ts});
-      buildIvGrid();buildSvcStatus();
-    },500);}
-  }
+  function next(){render(step);if(step<lbls.length-1){step++;setTimeout(next,900);}else{setTimeout(()=>{
+    resetting=false;svcState="ok";sc.style.display="none";
+    document.getElementById("ivGrid").style.opacity="1";document.getElementById("ivGrid").style.pointerEvents="auto";
+    const now=new Date();const ts=now.toLocaleDateString("en-GB")+" "+now.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
+    rLog.push({type:"Service lamp reset",iv:selIv.km.toLocaleString()+" km",ts});
+    buildIvGrid();buildSvcStatus();
+  },500);}}
   next();
 }
 function openDetail(code){
@@ -555,9 +907,7 @@ function openDetail(code){
   const sc=c.sev==="high"?"h":c.sev==="medium"?"m":"l";
   document.getElementById("dSev").innerHTML=`<span class="dsev ${sc}">${c.sev==="high"?"⚠ High":c.sev==="medium"?"◆ Medium":"● Low"}</span>`;
   document.getElementById("dBody").innerHTML=`
-    <div class="dsec">
-      <div class="dsec-ttl">Description</div>
-      <div class="ddesc">${c.desc}</div>
+    <div class="dsec"><div class="dsec-ttl">Description</div><div class="ddesc">${c.desc}</div>
       <div class="dmeta">
         <div class="dmi"><div class="dml">System</div><div class="dmv">${c.sys}</div></div>
         <div class="dmi"><div class="dml">Volvo DTC</div><div class="dmv" style="color:var(--acc)">${c.volvo}</div></div>
@@ -565,12 +915,10 @@ function openDetail(code){
         <div class="dmi"><div class="dml">Severity</div><div class="dmv" style="color:${c.sev==="high"?"var(--err)":c.sev==="medium"?"var(--warn)":"var(--ok)"}">${c.sev.charAt(0).toUpperCase()+c.sev.slice(1)}</div></div>
       </div>
     </div>
-    <div class="dsec">
-      <div class="dsec-ttl">Possible causes</div>
+    <div class="dsec"><div class="dsec-ttl">Possible causes</div>
       <ul class="dlist">${c.causes.map((x,i)=>`<li class="ditem c"><span class="dnum">${i+1}</span><span class="dtxt">${x}</span></li>`).join("")}</ul>
     </div>
-    <div class="dsec">
-      <div class="dsec-ttl">Repairs & solutions</div>
+    <div class="dsec"><div class="dsec-ttl">Repairs & solutions</div>
       <ul class="dlist">${c.repairs.map((x,i)=>`<li class="ditem r"><span class="dnum">${i+1}</span><span class="dtxt">${x}</span></li>`).join("")}</ul>
     </div>`;
   document.getElementById("dpage").classList.add("open");
@@ -582,7 +930,10 @@ function showTab(id,el){
   document.getElementById("tab-"+id).classList.add("on");el.classList.add("on");
   if(id==="svc"){buildIvGrid();buildSvcStatus();}
 }
-buildGauges();buildPID();buildDTC();buildFilters();filterCodes();
+populateMakes();buildGauges();buildPID();
+storedCodes=[{...DB[3],_ts:"17/05/2026 08:14"},{...DB[2],_ts:"17/05/2026 08:14"}];
+histCodes2=[{...DB[0],_ts:"02/04/2026 11:32"},{...DB[7],_ts:"14/03/2026 09:05"}];
+buildDTC();
 setTimeout(()=>{document.getElementById("cTxt").textContent="ELM327 CONNECTED";document.getElementById("cDot").classList.add("live");},1500);
 setInterval(tick,2000);
 </script>
