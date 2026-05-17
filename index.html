@@ -35,12 +35,16 @@ body{color:var(--txt);font-family:'Inter',sans-serif;line-height:1.5}
   background:var(--bg);z-index:100;
   display:flex;flex-direction:column;
   overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding-top:env(safe-area-inset-top);
+  padding-left:env(safe-area-inset-left);
+  padding-right:env(safe-area-inset-right);
+  padding-bottom:env(safe-area-inset-bottom);
 }
 #locatorScreen::-webkit-scrollbar{display:none}
 .loc-hdr{
   background:linear-gradient(135deg,#0d1117,#111827);
   border-bottom:1px solid var(--brd);
-  padding:calc(var(--st) + 14px) calc(var(--sr)+20px) 14px calc(var(--sl)+20px);
+  padding:16px 20px;
   display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
 }
 .loc-hdr-left{display:flex;align-items:center;gap:12px}
@@ -106,12 +110,15 @@ body{color:var(--txt);font-family:'Inter',sans-serif;line-height:1.5}
   position:fixed;top:0;left:0;right:0;bottom:0;
   display:none;flex-direction:column;background:var(--bg);
   opacity:0;transition:opacity .4s ease;
+  padding-top:env(safe-area-inset-top);
+  padding-left:env(safe-area-inset-left);
+  padding-right:env(safe-area-inset-right);
+  padding-bottom:env(safe-area-inset-bottom);
 }
 #mainApp.visible{display:flex;opacity:1}
 .hdr{background:var(--s1);border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:8px;
-  padding-top:calc(var(--st)+10px);padding-bottom:10px;
-  padding-left:calc(var(--sl)+14px);padding-right:calc(var(--sr)+14px);
-  min-height:calc(var(--st)+52px)}
+  padding:12px 14px;}
+
 .hdr-left{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
 .logo{width:34px;height:34px;border:1.5px solid var(--acc);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .logo span{font-size:9px;font-weight:600;letter-spacing:1.5px;color:var(--acc)}
@@ -135,7 +142,7 @@ body{color:var(--txt);font-family:'Inter',sans-serif;line-height:1.5}
 .ntab:active{opacity:.6}
 
 .panels{flex:1;overflow:hidden;position:relative}
-.panel{display:none;height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px calc(var(--sr)+14px) calc(var(--sb)+20px) calc(var(--sl)+14px)}
+.panel{display:none;height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 14px 30px 14px}
 .panel.on{display:block}
 .panel::-webkit-scrollbar{display:none}
 .sec-lbl{font-size:clamp(8px,1.5vw,9px);letter-spacing:2px;color:var(--txt3);font-weight:500;margin-bottom:9px}
@@ -258,11 +265,13 @@ body{color:var(--txt);font-family:'Inter',sans-serif;line-height:1.5}
 .log-iv{font-size:9px;padding:2px 8px;border-radius:8px;background:rgba(200,169,110,.1);color:var(--acc);border:1px solid rgba(200,169,110,.2);font-weight:600;white-space:nowrap}
 
 /* DETAIL */
-.dpage{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:300;flex-direction:column}
+.dpage{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:300;flex-direction:column;
+  padding-top:env(safe-area-inset-top);
+  padding-left:env(safe-area-inset-left);
+  padding-right:env(safe-area-inset-right);
+  padding-bottom:env(safe-area-inset-bottom);}
 .dpage.open{display:flex}
-.dhdr{background:var(--s1);border-bottom:1px solid var(--brd);display:flex;align-items:center;gap:10px;flex-shrink:0;flex-wrap:wrap;
-  padding-top:calc(var(--st)+12px);padding-bottom:12px;
-  padding-left:calc(var(--sl)+14px);padding-right:calc(var(--sr)+14px)}
+.dhdr{background:var(--s1);border-bottom:1px solid var(--brd);display:flex;align-items:center;gap:10px;flex-shrink:0;flex-wrap:wrap;padding:12px 14px;}
 .bbtn{background:transparent;border:1px solid var(--brd);border-radius:var(--r2);color:var(--txt2);padding:7px 13px;font-size:clamp(10px,1.8vw,11px);cursor:pointer;display:flex;align-items:center;gap:5px;flex-shrink:0;font-family:'Inter',sans-serif}
 .dhdr-code{font-size:clamp(13px,2.5vw,16px);font-weight:600;color:var(--warn);font-family:monospace}
 .dhdr-sys{font-size:clamp(9px,1.5vw,10px);color:var(--txt3);letter-spacing:1px;margin-top:2px}
@@ -270,7 +279,7 @@ body{color:var(--txt);font-family:'Inter',sans-serif;line-height:1.5}
 .dsev.h{background:rgba(239,68,68,.1);color:var(--err);border:1px solid rgba(239,68,68,.2)}
 .dsev.m{background:rgba(245,158,11,.1);color:var(--warn);border:1px solid rgba(245,158,11,.2)}
 .dsev.l{background:rgba(16,185,129,.1);color:var(--ok);border:1px solid rgba(16,185,129,.2)}
-.dbody{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px calc(var(--sr)+14px) calc(var(--sb)+16px) calc(var(--sl)+14px)}
+.dbody{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 14px 20px 14px}
 .dbody::-webkit-scrollbar{display:none}
 .dsec{background:var(--s2);border:1px solid var(--brd);border-radius:var(--r);padding:13px;margin-bottom:10px}
 .dsec-ttl{font-size:clamp(8px,1.5vw,9px);letter-spacing:2px;color:var(--txt3);font-weight:600;margin-bottom:10px}
@@ -380,7 +389,7 @@ body{color:var(--txt);font-family:'Inter',sans-serif;line-height:1.5}
   <div class="nav">
     <button class="ntab on" onclick="showTab('live',this)"><i class="ti ti-activity" aria-hidden="true"></i>LIVE</button>
     <button class="ntab" onclick="showTab('dtc',this)"><i class="ti ti-alert-circle" aria-hidden="true"></i>FAULTS</button>
-    <button class="ntab" onclick="showTab('svc',this)"><i class="ti ti-settings" aria-hidden="true"></i>SERVICE</button>
+    <button class="ntab" onclick="showTab('svc',this)"><i class="ti ti-oil" aria-hidden="true"></i>SERVICE</button>
   </div>
 
   <div class="panels">
